@@ -11,82 +11,111 @@
 
 ## Architecture Summary
 
-Your Lightsail server (`ubuntu@ip-172-26-1-124`) already hosts `dns-stack` and `omvi_blog` with a central Nginx reverse proxy running on the `omvi_blog_default` Docker network.
+Your Lightsail server (`ubuntu@ip-172-26-1-124`) hosts `dns-stack` and `omvi_blog` with a central Nginx reverse proxy running on the `omvi_blog_default` Docker network.
 
 ```
-                    Internet (HTTPS Port 443)
-                                │
-                                ▼
+                    Internet (HTTPS Port 443 / HTTP Port 80)
+                                       │
+                                       ▼
                    Central Nginx (Port 80/443)
                (Network: omvi_blog_default bridge)
-                                │
-            ┌───────────────────┴───────────────────┐
-            ▼                                       ▼
-     omvihub.in                           nutriwise.omvihub.in
-   (omvi_blog web)                          (nutriwise_web:8000)
+                                       │
+            ┌──────────────────────────┴──────────────────────────┐
+            ▼                                                     ▼
+     omvihub.in                                         nutriwise.omvihub.in
+   (omvi_blog web)                                      (nutriwise_web:8000)
 ```
 
-By connecting NutriWise to `omvi_blog_default`, the central Nginx can proxy requests directly to `http://nutriwise_web:8000` without exposing any ports to the host.
+By connecting NutriWise to `omvi_blog_default`, the central Nginx can proxy requests directly to `http://nutriwise_web:8000` without exposing any ports on the host.
 
 ---
 
 ## Step 1: On Your Local Machine (Push to GitHub)
 
-If you haven't committed and pushed the latest codebase yet, run these commands in your local project folder:
+In your local repository (`/mnt/Work/projects/hackday1.0`):
 
 ```bash
 cd /mnt/Work/projects/hackday1.0
-
-# Check git status
-git status
 
 # Stage all files
 git add .
 
 # Commit your changes
-git commit -m "feat: complete NutriWise production setup, docs, and Lightsail docker deployment configs"
+git commit -m "feat: complete Lightsail docker deployment with PostgreSQL support and 2-stage SSL"
 
-# Push to your GitHub repository
-git push origin main
+# Push to your repository
+git push origin master
 ```
-
-*(Alternatively, if transferring directly without git: `rsync -avz --exclude 'venv' --exclude '__pycache__' ./ ubuntu@YOUR_SERVER_IP:/opt/services/nutriwise/`)*
 
 ---
 
 ## Step 2: On Your Lightsail Server (Pull the Code)
 
-SSH into your Lightsail instance (or open your existing terminal session):
+SSH into your Lightsail instance:
 
 ```bash
 # Navigate to your services directory
 cd /opt/services/nutriwise
 
-# If cloning for the first time:
-# git clone <YOUR_GITHUB_REPO_URL> .
-
-# If you already have the repo cloned, pull the latest changes:
-git pull origin main
+# Pull the latest changes
+git pull origin master
 ```
 
-Verify the files are present:
+Verify that the files exist:
 ```bash
 ls -la
-# You should see Dockerfile, docker-compose.lightsail.yml, requirements.txt, dietary_app, core, etc.
+# You should see Dockerfile, docker-compose.lightsail.yml, requirements.txt, dietary_app, core, nginx/, etc.
 ```
 
 ---
 
-## Step 3: Create the Production `.env` File
+## Step 3: Choose Your Database & Create `.env`
 
-Inside `/opt/services/nutriwise`, create your `.env` configuration:
+NutriWise supports both **SQLite** and **PostgreSQL**.
+
+### Database Options:
+
+#### Option A: Persistent SQLite (Recommended for 2 GB Lightsail — Zero Extra RAM)
+SQLite runs embedded within Python and requires **0 extra RAM or services**. The database file is stored safely on the host at `/opt/services/nutriwise/data/db.sqlite3` across container restarts.
+
+#### Option B: PostgreSQL (External RDS, Supabase, or Existing Postgres Container)
+If you already have a PostgreSQL container (e.g. on `omvi_blog_default`) or an external managed PostgreSQL (like Supabase or AWS RDS), NutriWise connects to it seamlessly via `psycopg2-binary`.
+
+---
+
+### Create the `.env` file:
 
 ```bash
 nano .env
 ```
 
-Paste the following configuration (replace placeholders with your real API keys):
+Paste your `.env` configuration (no database settings needed!):
+```ini
+# Security
+DEBUG=False
+SECRET_KEY=nutriwise-prod-sec-key-replace-with-a-random-string-98342718
+ALLOWED_HOSTS=nutriwise.omvihub.in,localhost,127.0.0.1,nutriwise_web
+CSRF_TRUSTED_ORIGINS=https://nutriwise.omvihub.in
 
+# AI & Weather APIs
+GEMINI_API_KEY=your_actual_gemini_api_key_here
+GEMINI_MODEL=gemini-2.5-flash
+OPENWEATHER_API_KEY=your_actual_openweather_api_key_here
+```
+
+Press `Ctrl+O`, `Enter` to save, and `Ctrl+X` to exit.
+
+> **Optional (Instant 60 Foods & Books in Production):**  
+> If you'd like your production server to immediately have all 60 foods, meal pairings, and book extractions from your local machine, you can copy your local `db.sqlite3` to `/opt/services/nutriwise/data/db.sqlite3`:
+> ```bash
+> mkdir -p /opt/services/nutriwise/data
+> # From your local machine:
+> # scp /mnt/Work/projects/hackday1.0/db.sqlite3 ubuntu@YOUR_SERVER_IP:/opt/services/nutriwise/data/db.sqlite3
+> ```
+> If you don't copy it, running `python manage.py migrate` in Step 5 will simply initialize a fresh database.
+
+
+#### If Using Option B (PostgreSQL):
 ```ini
 # Security
 DEBUG=False
@@ -99,11 +128,12 @@ GEMINI_API_KEY=your_actual_gemini_api_key_here
 GEMINI_MODEL=gemini-2.5-flash
 OPENWEATHER_API_KEY=your_actual_openweather_api_key_here
 
-# Database (Leave blank to use persistent SQLite inside ./data)
-DB_HOST=
-DB_NAME=
-DB_USER=
-DB_PASSWORD=
+# PostgreSQL Settings (Container name, localhost, or external endpoint)
+DB_HOST=postgres_container_name_or_endpoint
+DB_NAME=nutriwise_db
+DB_USER=nutriwise_user
+DB_PASSWORD=your_db_password
+DB_PORT=5432
 ```
 
 Press `Ctrl+O`, `Enter` to save, and `Ctrl+X` to exit.
@@ -112,7 +142,7 @@ Press `Ctrl+O`, `Enter` to save, and `Ctrl+X` to exit.
 
 ## Step 4: Build and Launch `nutriwise_web`
 
-Run Docker Compose using the dedicated Lightsail compose file:
+Build the application image (installs Python packages, `psycopg2-binary`, OCR libraries) and start the container:
 
 ```bash
 docker compose -f docker-compose.lightsail.yml up -d --build
@@ -120,187 +150,137 @@ docker compose -f docker-compose.lightsail.yml up -d --build
 
 ### Verify Container Status:
 ```bash
-docker ps
+docker ps -f name=nutriwise_web
 ```
-You should see `nutriwise_web` running (Up) and attached to the `omvi_blog_default` network.
+You should see `nutriwise_web` with Status `Up` (attached to `omvi_blog_default`).
 
-To check its logs:
+Check logs to verify clean boot:
 ```bash
-docker logs -f nutriwise_web
+docker logs --tail 20 nutriwise_web
 ```
-*(Press `Ctrl+C` to exit logs)*
 
 ---
 
 ## Step 5: Run Database Migrations & Initial Setup
 
-Execute Django management commands inside the running container:
+Execute Django setup commands inside the container:
 
 ```bash
-# 1. Run database migrations
+# 1. Run database migrations (creates all 10 schema tables)
 docker compose -f docker-compose.lightsail.yml exec web python manage.py migrate
 
-# 2. Collect static files
+# 2. Collect static files into /app/staticfiles
 docker compose -f docker-compose.lightsail.yml exec web python manage.py collectstatic --noinput
 
-# 3. Create your admin superuser
+# 3. Create your administrator superuser account
 docker compose -f docker-compose.lightsail.yml exec web python manage.py createsuperuser
 ```
-
-*(Follow the prompt to set your admin username, email, and password).*
+*(Enter your chosen admin username, email, and password).*
 
 ---
 
-## Step 6: Configure DNS & Let's Encrypt SSL
+## Step 6: Two-Stage SSL Certificate Generation (Foolproof)
 
-### 1. DNS Record
-In your domain DNS manager (Route 53, Cloudflare, Namecheap, etc.):
-- Add an **A Record**:
-  - **Name / Host:** `nutriwise`
-  - **Type:** `A`
-  - **Value / Target:** Your Lightsail Static Public IP
-- Wait 1–2 minutes and verify it resolves:
-  ```bash
-  ping nutriwise.omvihub.in
-  ```
+> **Why 2 Stages?**  
+> If Nginx attempts to load an SSL configuration before the certificate files exist at `/etc/letsencrypt/live/nutriwise.omvihub.in/`, Nginx **fails syntax testing and crashes**.  
+> We solve this cleanly: **Stage 1 (HTTP)** lets Nginx serve the ACME challenge, Certbot issues the certificate, and **Stage 2 (HTTPS)** locks in SSL.
 
-### 2. Obtain SSL Certificate via Certbot
-If using Certbot on the host:
+### 1. DNS Pre-check
+Make sure your domain DNS has an **A Record** for `nutriwise.omvihub.in` pointing to your Lightsail public IP.
+Verify with:
+```bash
+ping -c 2 nutriwise.omvihub.in
+```
+
+---
+
+### 2. Stage 1: Load HTTP-Only Pre-SSL Config
+
+Copy NutriWise's Stage 1 configuration into your central Nginx `conf.d/` directory:
+
+```bash
+# Copy Stage 1 config (adjust destination path to your central nginx conf folder)
+# E.g., if central nginx reads from /opt/services/omvi_blog/nginx/conf.d/:
+sudo cp /opt/services/nutriwise/nginx/nutriwise_stage1_http.conf /opt/services/omvi_blog/nginx/conf.d/nutriwise.conf
+```
+
+Test and reload Nginx:
+```bash
+# If central Nginx is running in Docker:
+docker exec $(docker ps -q -f name=nginx) nginx -t
+docker exec $(docker ps -q -f name=nginx) nginx -s reload
+```
+*(Now `http://nutriwise.omvihub.in` is active and ready to handle the Let's Encrypt challenge).*
+
+---
+
+### 3. Issue the SSL Certificate via Certbot
+
+Run Certbot to request the certificate:
+
+**Method A: Using Host Certbot (if installed on Ubuntu host):**
 ```bash
 sudo certbot certonly --webroot -w /var/www/certbot -d nutriwise.omvihub.in
-# OR standalone (temporarily stops port 80 if not proxied):
-# sudo certbot certonly --standalone -d nutriwise.omvihub.in
 ```
 
-Verify certificate files exist:
+**Method B: Using Dockerized Certbot:**
 ```bash
-sudo ls -l /etc/letsencrypt/live/nutriwise.omvihub.in/
-# Should contain: fullchain.pem and privkey.pem
+docker run --rm \
+  -v /var/www/certbot:/var/www/certbot \
+  -v /etc/letsencrypt:/etc/letsencrypt \
+  certbot/certbot certonly --webroot -w /var/www/certbot -d nutriwise.omvihub.in
+```
+
+Verify the certificate files were created:
+```bash
+sudo ls -la /etc/letsencrypt/live/nutriwise.omvihub.in/
+# You should see: cert.pem, chain.pem, fullchain.pem, privkey.pem
 ```
 
 ---
 
-## Step 7: Update Your Central Nginx Reverse Proxy
+### 4. Stage 2: Activate Full HTTPS SSL Config
 
-Add the NutriWise virtual host configuration to your central Nginx configuration directory (e.g. `/opt/services/omvi_blog/nginx/conf.d/` or `/etc/nginx/conf.d/`):
+Now that the certificates exist, replace the Nginx configuration with the production HTTPS config:
 
-Open or create `nutriwise.conf`:
 ```bash
-# Example location (adjust path to where your central nginx conf files live):
-sudo nano /opt/services/omvi_blog/nginx/conf.d/nutriwise.conf
+sudo cp /opt/services/nutriwise/nginx/nutriwise.omvihub.in.conf /opt/services/omvi_blog/nginx/conf.d/nutriwise.conf
 ```
 
-Paste the server configuration:
-
-```nginx
-upstream nutriwise {
-    server nutriwise_web:8000;
-}
-
-server {
-    listen 80;
-    server_name nutriwise.omvihub.in;
-
-    location /.well-known/acme-challenge/ {
-        root /var/www/certbot;
-    }
-
-    location / {
-        return 301 https://$host$request_uri;
-    }
-}
-
-server {
-    listen 443 ssl;
-    http2 on;
-    server_name nutriwise.omvihub.in;
-
-    ssl_certificate /etc/letsencrypt/live/nutriwise.omvihub.in/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/nutriwise.omvihub.in/privkey.pem;
-
-    ssl_protocols TLSv1.2 TLSv1.3;
-    ssl_prefer_server_ciphers on;
-    ssl_ciphers HIGH:!aNULL:!MD5;
-
-    client_max_body_size 50M;
-
-    # Static assets
-    location /static/ {
-        alias /opt/services/nutriwise/staticfiles/;
-        expires 30d;
-        add_header Cache-Control "public, no-transform";
-        access_log off;
-    }
-
-    # Uploaded books/documents
-    location /media/ {
-        alias /opt/services/nutriwise/media/;
-        expires 7d;
-        add_header Cache-Control "public, no-transform";
-    }
-
-    # Proxy to NutriWise web container
-    location / {
-        proxy_pass http://nutriwise;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto https;
-
-        proxy_connect_timeout 60s;
-        proxy_read_timeout 120s;
-        proxy_send_timeout 60s;
-    }
-}
-```
-
-### Test & Reload Nginx:
-Test the Nginx configuration syntax:
+Test syntax and reload Nginx:
 ```bash
-# If nginx is running inside a docker container:
 docker exec $(docker ps -q -f name=nginx) nginx -t
-
-# If syntax is ok, reload:
 docker exec $(docker ps -q -f name=nginx) nginx -s reload
 ```
 
-*(If running Nginx directly on the host: `sudo nginx -t && sudo systemctl reload nginx`)*
+---
+
+## Step 7: Verify Everything Is Live
+
+1. **Visit the Web App**:  
+   Open `https://nutriwise.omvihub.in` in your browser.  
+   You should see the landing page with an active HTTPS padlock.
+2. **Access Admin**:  
+   Open `https://nutriwise.omvihub.in/admin/` and log in with your superuser.
+3. **Upload Books**:  
+   Under **Documents > Sources**, click **Add Source**, upload a nutrition PDF or EPUB, and click **Process Document** to extract foods automatically.
 
 ---
 
-## Step 8: Verify & Test Everything
-
-1. Open your browser and visit:
-   ```
-   https://nutriwise.omvihub.in
-   ```
-2. You should see the landing page with valid HTTPS lock.
-3. Access the Admin Dashboard:
-   ```
-   https://nutriwise.omvihub.in/admin/
-   ```
-   Log in with the superuser credentials created in Step 5.
-4. Try registering a user, onboarding, and testing daily plan generation.
-
----
-
-## Useful Maintenance Commands
+## Routine Maintenance & Operations
 
 ```bash
 # View live application logs:
 docker logs -f nutriwise_web
 
-# Restart application:
+# Restart web container:
 docker compose -f docker-compose.lightsail.yml restart web
 
-# Pull updates and rebuild after git push:
-git pull origin main
+# Pull updates and rebuild:
+git pull origin master
 docker compose -f docker-compose.lightsail.yml up -d --build
 docker compose -f docker-compose.lightsail.yml exec web python manage.py migrate
 
-# Enter Django interactive shell:
-docker compose -f docker-compose.lightsail.yml exec web python manage.py shell
-
-# Backup SQLite database:
+# Database backup (SQLite):
 cp /opt/services/nutriwise/data/db.sqlite3 /opt/backups/nutriwise_$(date +%F).sqlite3
 ```

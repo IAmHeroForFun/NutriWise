@@ -14,6 +14,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     tesseract-ocr \
     tesseract-ocr-eng \
     libmupdf-dev \
+    libpq-dev \
     curl \
     && rm -rf /var/lib/apt/lists/*
 

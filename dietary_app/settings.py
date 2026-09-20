@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from urllib.parse import urlparse
 from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -9,6 +10,10 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-dev-key')
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
 ALLOWED_HOSTS = [h.strip() for h in os.getenv('ALLOWED_HOSTS', '*').split(',') if h.strip()]
 CSRF_TRUSTED_ORIGINS = [o.strip() for o in os.getenv('CSRF_TRUSTED_ORIGINS', '').split(',') if o.strip()]
+
+# Reverse proxy SSL header support (for Nginx)
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -51,9 +56,23 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'dietary_app.wsgi.application'
 
-# Database configuration: SQLite default locally, PostgreSQL if DB_HOST provided
+# Database configuration: Persistent SQLite default, PostgreSQL if DATABASE_URL or DB_HOST provided
+DATABASE_URL = os.getenv('DATABASE_URL', '').strip()
 DB_HOST = os.getenv('DB_HOST', '').strip()
-if DB_HOST:
+
+if DATABASE_URL:
+    url = urlparse(DATABASE_URL)
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': url.path.lstrip('/') or 'postgres',
+            'USER': url.username or 'postgres',
+            'PASSWORD': url.password or '',
+            'HOST': url.hostname or 'localhost',
+            'PORT': str(url.port or 5432),
+        }
+    }
+elif DB_HOST:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
@@ -65,12 +84,22 @@ if DB_HOST:
         }
     }
 else:
+    # Resolve SQLite database file location
+    sqlite_env = os.getenv('SQLITE_PATH', '').strip()
+    if sqlite_env:
+        sqlite_file = Path(sqlite_env)
+    elif (BASE_DIR / 'data').is_dir():
+        sqlite_file = BASE_DIR / 'data' / 'db.sqlite3'
+    else:
+        sqlite_file = BASE_DIR / 'db.sqlite3'
+
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
+            'NAME': sqlite_file,
         }
     }
+
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
