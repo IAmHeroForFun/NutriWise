@@ -1,0 +1,274 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Today's Dietary Plan — NutriWise{% endblock %}
+
+{% block content %}
+<div class="split-dashboard-wrapper">
+
+  <!-- ================= LEFT PANE (Fixed Navigation & Time of Day Switcher) ================= -->
+  <aside class="split-left-pane">
+    <div class="pane-user-card">
+      <div class="user-greeting">
+        <span class="user-avatar">🥗</span>
+        <div>
+          <h3 class="user-name">{{ user.username|title }}</h3>
+          <span class="diet-pill">{{ profile.diet_type|title }}</span>
+        </div>
+      </div>
+      <div class="user-location-row">
+        <span>📍 {{ plan.weather.location|default:'Local Region' }}</span>
+        {% if plan.weather.temp %}<span>{{ plan.weather.temp }}°C</span>{% endif %}
+      </div>
+    </div>
+
+    <!-- Meal / Time of Day Navigation Menu -->
+    <div class="meal-nav-container">
+      <div class="meal-nav-header">Explore by Time of Day</div>
+      <nav class="meal-nav-list" id="mealNavList">
+        <button type="button" 
+                class="meal-nav-item active" 
+                data-target="all-meals-view"
+                onclick="showTab('all-meals-view')">
+          <span class="meal-nav-icon">✨</span>
+          <span class="meal-nav-label">All Times of Day</span>
+        </button>
+
+        {% for meal_key, items in plan.meals.items %}
+          <button type="button" 
+                  class="meal-nav-item" 
+                  data-target="meal-{{ meal_key }}"
+                  onclick="showTab('meal-{{ meal_key }}')">
+            <span class="meal-nav-icon">
+              {% if meal_key == 'breakfast' %}🌅{% elif meal_key == 'snack' %}☕{% elif meal_key == 'lunch' %}🍛{% else %}🌙{% endif %}
+            </span>
+            <span class="meal-nav-label">{{ meal_key|title }}</span>
+            <span class="meal-count-badge">{{ items|length }}</span>
+          </button>
+        {% endfor %}
+
+        <div style="border-top: 1px solid var(--border); margin: 6px 0;"></div>
+
+        <!-- Dedicated Health & Ingredients Explorer Tab -->
+        <button type="button" 
+                class="meal-nav-item highlight-nav-item" 
+                data-target="health-ingredients-hub"
+                onclick="showTab('health-ingredients-hub')">
+          <span class="meal-nav-icon">🌿</span>
+          <span class="meal-nav-label">Health & Ingredients</span>
+          <span class="meal-count-badge" style="background:#2d6a4f; color:#fff;">{{ plan.health_ingredients|length }}</span>
+        </button>
+      </nav>
+    </div>
+
+    <!-- Quick Climate Summary Card in Left Pane -->
+    <div class="pane-climate-card">
+      <div class="climate-row">
+        <span class="climate-icon">{{ plan.weather.emoji }}</span>
+        <div>
+          <div class="climate-cat">{{ plan.weather.category }} Climate</div>
+          <div class="climate-desc">{{ plan.weather.description }}</div>
+        </div>
+      </div>
+      <div class="climate-tip">{{ plan.weather.tip }}</div>
+      <div class="pane-season-tag">{{ season_meta.emoji }} {{ season_meta.name }}</div>
+    </div>
+  </aside>
+
+  <!-- ================= RIGHT PANE (Independently Scrollable Hub) ================= -->
+  <main class="split-right-pane" id="splitRightPane">
+
+    <!-- Mobile-only top banner -->
+    <div class="weather-banner-compact">
+      <div class="weather-info">
+        <span class="weather-emoji-compact">{{ plan.weather.emoji }}</span>
+        <div>
+          <strong>{{ plan.weather.location }}</strong> &bull; {{ plan.weather.category }} Climate
+          {% if plan.weather.temp %}({{ plan.weather.temp }}°C){% endif %}
+          <span class="weather-sub-compact">&mdash; {{ plan.weather.tip }}</span>
+        </div>
+      </div>
+      <div class="season-badge-compact">
+        {{ season_meta.emoji }} {{ season_meta.name }}
+      </div>
+    </div>
+
+    <!-- Active Filter Header Indicator -->
+    <div class="active-filter-bar" id="activeFilterBar">
+      <span id="activeFilterLabel">Displaying all dishes for all times of the day</span>
+      <button type="button" class="btn btn-secondary btn-sm" onclick="showTab('all-meals-view')" id="resetFilterBtn" style="display:none;">View All</button>
+    </div>
+
+    <!-- Daily Personalized Summary (if present) -->
+    {% if plan.overall_summary %}
+      <div style="background: #f8fafc; border-left: 4px solid var(--primary); padding: 10px 16px; border-radius: 6px; margin-bottom: 16px; font-size: 0.9rem; color: var(--text-main);">
+        {{ plan.overall_summary }}
+      </div>
+    {% endif %}
+
+    <!-- ================= SECTION: ALL MEAL SLOTS ================= -->
+    <div id="mealsContainer">
+      {% for meal_key, items in plan.meals.items %}
+        <section class="meal-section-pane" id="meal-{{ meal_key }}">
+          <div class="meal-header">
+            <span class="meal-header-emoji">
+              {% if meal_key == 'breakfast' %}🌅{% elif meal_key == 'snack' %}☕{% elif meal_key == 'lunch' %}🍛{% else %}🌙{% endif %}
+            </span>
+            <h2 class="meal-title">{{ meal_key|title }} Choices</h2>
+            <span class="meal-slot-count">({{ items|length }} safe recommendation{{ items|length|pluralize }})</span>
+          </div>
+
+          {% if items %}
+            <div class="meal-cards-grid">
+              {% for item in items %}
+                <div class="food-card" data-ingredients="{{ item.ingredients|join:','|lower }}">
+                  {% if item.is_featured %}
+                    <span class="featured-badge">⭐ Recommended Pick</span>
+                  {% endif %}
+                  <div class="food-card-top">
+                    <a href="{% url 'core:food_detail' item.id %}" class="food-card-name">{{ item.name }}</a>
+                    <span class="score-badge">{{ item.score }}/100</span>
+                  </div>
+
+                  {% if item.clinical_rationale %}
+                    <p class="food-summary" style="font-weight: 500; color: var(--primary-dark);">{{ item.clinical_rationale }}</p>
+                  {% elif item.summary %}
+                    <p class="food-summary">{{ item.summary|truncatewords:24 }}</p>
+                  {% endif %}
+
+                  <!-- Reasons list -->
+                  <div class="reasons-wrap">
+                    {% for reason in item.reasons %}
+                      <span class="reason-tag">✓ {{ reason }}</span>
+                    {% endfor %}
+                  </div>
+
+                  <!-- Ingredients tags (Clickable to jump to Health Info) -->
+                  {% if item.ingredients %}
+                    <div class="ingredients-wrap">
+                      {% for ing in item.ingredients|slice:":6" %}
+                        <span class="ing-pill clickable-ing" onclick="filterByIngredient('{{ ing|escapejs }}')">
+                          {{ ing }}
+                        </span>
+                      {% endfor %}
+                      {% if item.ingredients|length > 6 %}
+                        <span class="ing-pill">+{{ item.ingredients|length|add:"-6" }} more</span>
+                      {% endif %}
+                    </div>
+                  {% endif %}
+
+                  <!-- Verified Citation Excerpt -->
+                  <div class="citation-box">
+                    📖 <em>{{ item.citation.source_title }}</em>
+                    {% if item.citation.page %}(Page {{ item.citation.page }}){% endif %}
+                    <br>
+                    <a href="javascript:void(0);"
+                       onclick="showCitation('{{ item.citation.source_title|escapejs }}', '{{ item.citation.page|default:''|escapejs }}', '{{ item.citation.chapter|default:''|escapejs }}', '{{ item.citation.author|default:''|escapejs }}', '{{ item.citation.original_text|escapejs }}')"
+                       class="citation-link">
+                      Read verified book citation &rarr;
+                    </a>
+                  </div>
+
+                  <!-- Bottom Actions -->
+                  <div class="food-card-actions">
+                    <a href="{% url 'core:food_detail' item.id %}" class="btn btn-secondary btn-sm">Full Details</a>
+                    <a href="javascript:void(0);"
+                       onclick="markCantMake({{ item.id }}, '{{ item.name|escapejs }}')"
+                       class="cant-make-link">
+                      Can't make? 🔄
+                    </a>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="empty-meal-box">
+              <p>No foods matching your strict criteria for this slot. More items unlock as you add more reference books in the admin panel!</p>
+            </div>
+          {% endif %}
+        </section>
+      {% endfor %}
+    </div>
+
+    <!-- ================= SECTION: HEALTH & INGREDIENTS HUB ================= -->
+    <section class="health-hub-pane" id="health-ingredients-hub" style="display:none;">
+      <div class="health-hub-header">
+        <div>
+          <h2 style="font-size: 1.6rem; color: var(--primary-dark); margin-bottom: 4px;">🌿 Key Ingredients for Your Health</h2>
+          <p style="color: var(--text-muted); font-size: 0.95rem;">
+            Explore therapeutic ingredients recommended in your books, why they benefit your conditions, and every dish you can make with them.
+          </p>
+        </div>
+        <input type="text" 
+               id="ingredientSearchInput" 
+               class="form-input" 
+               placeholder="🔍 Search ingredients (e.g. spinach, oats, cumin)..." 
+               onkeyup="searchIngredients()"
+               style="max-width: 320px;">
+      </div>
+
+      <div class="ingredients-hub-grid" id="ingredientsHubGrid">
+        {% for ing_data in plan.health_ingredients %}
+          <div class="ingredient-card {% if ing_data.is_vital %}vital-ingredient{% endif %}" data-ingname="{{ ing_data.name|lower }}">
+            <div class="ing-card-top">
+              <h3 class="ing-card-title">{{ ing_data.name }}</h3>
+              <span class="ing-dish-count">{{ ing_data.dish_count }} Dish{{ ing_data.dish_count|pluralize:"es" }}</span>
+            </div>
+
+            <!-- Health Condition Badges -->
+            {% if ing_data.conditions %}
+              <div class="ing-conditions-row">
+                {% for cond in ing_data.conditions %}
+                  <span class="condition-badge">🛡️ Recommended for {{ cond }}</span>
+                {% endfor %}
+              </div>
+            {% endif %}
+
+            <!-- Sourced Benefits Excerpt -->
+            {% if ing_data.benefits %}
+              <div class="ing-benefits-list">
+                {% for ben in ing_data.benefits %}
+                  <div class="ing-benefit-item">✓ {{ ben }}</div>
+                {% endfor %}
+              </div>
+            {% endif %}
+
+            <!-- Dishes using this ingredient -->
+            <div class="ing-dishes-section">
+              <strong style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Dishes using this:</strong>
+              <div class="ing-dishes-list">
+                {% for dish in ing_data.dishes %}
+                  <a href="{% url 'core:food_detail' dish.id %}" class="ing-dish-link">
+                    🍲 {{ dish.name }}
+                  </a>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </section>
+
+    <!-- Bottom Spacing for scrolling -->
+    <div style="height: 60px;"></div>
+  </main>
+</div>
+
+<!-- Citation Modal -->
+<div class="modal-overlay" id="citationModal">
+  <div class="modal-content">
+    <button type="button" class="modal-close" onclick="closeCitation()">&times;</button>
+    <div class="modal-badge">Verified Book Citation</div>
+    <h3 id="modalTitle" class="modal-title-text"></h3>
+    <p id="modalMeta" class="modal-meta-text"></p>
+    <div class="modal-quote-box" id="modalText"></div>
+    <div style="margin-top: 20px; text-align: right;">
+      <button type="button" class="btn btn-secondary btn-sm" onclick="closeCitation()">Close</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/dashboard.js' %}"></script>
+{% endblock %}

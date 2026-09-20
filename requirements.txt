@@ -1,0 +1,9 @@
+django>=4.2,<5.2
+python-dotenv
+requests
+beautifulsoup4
+PyMuPDF
+ebooklib
+Pillow
+pytesseract
+gunicorn

@@ -1,0 +1,278 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Dietary Preferences — NutriWise{% endblock %}
+
+{% block content %}
+<div class="wizard-card">
+  <!-- Progress Bar -->
+  <div class="progress-track">
+    <div class="progress-fill" id="progressFill" style="width: 14%;"></div>
+  </div>
+  <div class="step-indicator" id="stepIndicator">Step 1 of 7 — Basic Stats</div>
+
+  <form method="POST" id="onboardingForm">
+    {% csrf_token %}
+
+    <!-- Step 1: Basic Stats -->
+    <div class="step-pane active" id="step1">
+      <h2 class="step-title">👤 Basic Information</h2>
+      <p class="step-desc">Enter your body metrics for nutritional baseline context.</p>
+
+      <div class="form-group">
+        <label class="form-label">Age (Years)</label>
+        <input type="number" name="age" class="form-input" min="5" max="110" value="{{ profile.age|default:'' }}" placeholder="e.g. 28">
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+        <div class="form-group">
+          <label class="form-label">Height (cm)</label>
+          <input type="number" step="0.1" name="height_cm" class="form-input" value="{{ profile.height_cm|default:'' }}" placeholder="e.g. 170">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Weight (kg)</label>
+          <input type="number" step="0.1" name="weight_kg" class="form-input" value="{{ profile.weight_kg|default:'' }}" placeholder="e.g. 68">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Activity Level</label>
+        <select name="activity_level" class="form-select">
+          <option value="sedentary" {% if profile.activity_level == 'sedentary' %}selected{% endif %}>Sedentary (mostly desk work)</option>
+          <option value="light" {% if profile.activity_level == 'light' %}selected{% endif %}>Light (walking, light daily movement)</option>
+          <option value="moderate" {% if profile.activity_level == 'moderate' or not profile.activity_level %}selected{% endif %}>Moderate (3-5 days workout / active)</option>
+          <option value="active" {% if profile.activity_level == 'active' %}selected{% endif %}>Active (heavy labor / intense training)</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Step 2: Diet Type -->
+    <div class="step-pane" id="step2">
+      <h2 class="step-title">🥗 Diet Type</h2>
+      <p class="step-desc">Choose your dietary lifestyle. This strictly filters out incompatible foods.</p>
+
+      <div class="choice-grid" style="grid-template-columns: 1fr;">
+        <label class="choice-label choice-card-lg">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <input type="radio" name="diet_type" value="vegan" {% if profile.diet_type == 'vegan' %}checked{% endif %}>
+            <span class="choice-text" style="font-size: 1.1rem;">🌱 Vegan</span>
+          </div>
+          <span style="font-size: 0.85rem; color: var(--text-muted);">Strictly 100% plant-based. Excludes dairy, eggs, meat, and honey.</span>
+        </label>
+
+        <label class="choice-label choice-card-lg">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <input type="radio" name="diet_type" value="vegetarian" {% if profile.diet_type == 'vegetarian' or not profile.diet_type %}checked{% endif %}>
+            <span class="choice-text" style="font-size: 1.1rem;">🥛 Vegetarian</span>
+          </div>
+          <span style="font-size: 0.85rem; color: var(--text-muted);">Includes plant foods, dairy (paneer, milk, curd, ghee). No meat or seafood.</span>
+        </label>
+
+        <label class="choice-label choice-card-lg">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <input type="radio" name="diet_type" value="non-vegetarian" {% if profile.diet_type == 'non-vegetarian' %}checked{% endif %}>
+            <span class="choice-text" style="font-size: 1.1rem;">🍗 Non-Vegetarian</span>
+          </div>
+          <span style="font-size: 0.85rem; color: var(--text-muted);">Includes all vegetarian foods plus poultry, seafood, and meats.</span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Step 3: Health Conditions -->
+    <div class="step-pane" id="step3">
+      <h2 class="step-title">🏥 Health Conditions & Goals</h2>
+      <p class="step-desc">Select any conditions you are managing. Foods contraindicated in books are avoided; recommended ones are boosted.</p>
+
+      <div class="choice-grid">
+        <label class="choice-label">
+          <input type="checkbox" name="conditions" value="diabetes" {% if 'diabetes' in profile.conditions %}checked{% endif %}>
+          <span class="choice-text">🩸 Diabetes / Blood Sugar</span>
+        </label>
+        <label class="choice-label">
+          <input type="checkbox" name="conditions" value="hypertension" {% if 'hypertension' in profile.conditions %}checked{% endif %}>
+          <span class="choice-text">❤️ Hypertension / High BP</span>
+        </label>
+        <label class="choice-label">
+          <input type="checkbox" name="conditions" value="cholesterol" {% if 'cholesterol' in profile.conditions %}checked{% endif %}>
+          <span class="choice-text">🫀 High Cholesterol</span>
+        </label>
+        <label class="choice-label">
+          <input type="checkbox" name="conditions" value="weight_loss" {% if 'weight_loss' in profile.conditions %}checked{% endif %}>
+          <span class="choice-text">⚖️ Weight Loss Goal</span>
+        </label>
+        <label class="choice-label">
+          <input type="checkbox" name="conditions" value="anemia" {% if 'anemia' in profile.conditions %}checked{% endif %}>
+          <span class="choice-text">💉 Anemia / Low Iron</span>
+        </label>
+        <label class="choice-label">
+          <input type="checkbox" name="conditions" value="thyroid" {% if 'thyroid' in profile.conditions %}checked{% endif %}>
+          <span class="choice-text">🦋 Thyroid Health</span>
+        </label>
+        <label class="choice-label">
+          <input type="checkbox" name="conditions" value="pcos" {% if 'pcos' in profile.conditions %}checked{% endif %}>
+          <span class="choice-text">🌸 PCOD / PCOS</span>
+        </label>
+        <label class="choice-label">
+          <input type="checkbox" name="conditions" value="digestive" {% if 'digestive' in profile.conditions %}checked{% endif %}>
+          <span class="choice-text">🫄 IBS / Digestive Sensitivity</span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Step 4: Allergies -->
+    <div class="step-pane" id="step4">
+      <h2 class="step-title">🛡️ Allergies & Intolerances</h2>
+      <p class="step-desc">Strict exclusion. Any dish containing these allergens is 100% removed.</p>
+
+      <div class="choice-grid">
+        <label class="choice-label">
+          <input type="checkbox" name="allergies" value="peanut" {% if 'peanut' in profile.allergies %}checked{% endif %}>
+          <span class="choice-text">🥜 Peanuts / Groundnuts</span>
+        </label>
+        <label class="choice-label">
+          <input type="checkbox" name="allergies" value="gluten" {% if 'gluten' in profile.allergies %}checked{% endif %}>
+          <span class="choice-text">🌾 Gluten (Wheat, Barley, Atta)</span>
+        </label>
+        <label class="choice-label">
+          <input type="checkbox" name="allergies" value="dairy" {% if 'dairy' in profile.allergies %}checked{% endif %}>
+          <span class="choice-text">🥛 Dairy / Lactose</span>
+        </label>
+        <label class="choice-label">
+          <input type="checkbox" name="allergies" value="tree_nut" {% if 'tree_nut' in profile.allergies %}checked{% endif %}>
+          <span class="choice-text">🌰 Tree Nuts (Cashew, Almond)</span>
+        </label>
+        <label class="choice-label">
+          <input type="checkbox" name="allergies" value="soy" {% if 'soy' in profile.allergies %}checked{% endif %}>
+          <span class="choice-text">🫘 Soy & Soybeans</span>
+        </label>
+        <label class="choice-label">
+          <input type="checkbox" name="allergies" value="egg" {% if 'egg' in profile.allergies %}checked{% endif %}>
+          <span class="choice-text">🥚 Eggs</span>
+        </label>
+        <label class="choice-label">
+          <input type="checkbox" name="allergies" value="shellfish" {% if 'shellfish' in profile.allergies %}checked{% endif %}>
+          <span class="choice-text">🦐 Shellfish</span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Step 5: Dislikes -->
+    <div class="step-pane" id="step5">
+      <h2 class="step-title">👎 Disliked Foods & Ingredients</h2>
+      <p class="step-desc">Foods and ingredients you do not like to eat. Dishes using these ingredients will be omitted.</p>
+
+      <div class="choice-grid">
+        <label class="choice-label">
+          <input type="checkbox" name="disliked_foods" value="bitter gourd" {% if 'bitter gourd' in profile.disliked_foods %}checked{% endif %}>
+          <span class="choice-text">Bitter Gourd (Karela)</span>
+        </label>
+        <label class="choice-label">
+          <input type="checkbox" name="disliked_foods" value="brinjal" {% if 'brinjal' in profile.disliked_foods %}checked{% endif %}>
+          <span class="choice-text">Brinjal / Eggplant</span>
+        </label>
+        <label class="choice-label">
+          <input type="checkbox" name="disliked_ingredients" value="onion" {% if 'onion' in profile.disliked_ingredients %}checked{% endif %}>
+          <span class="choice-text">Onion</span>
+        </label>
+        <label class="choice-label">
+          <input type="checkbox" name="disliked_ingredients" value="garlic" {% if 'garlic' in profile.disliked_ingredients %}checked{% endif %}>
+          <span class="choice-text">Garlic</span>
+        </label>
+        <label class="choice-label">
+          <input type="checkbox" name="disliked_foods" value="okra" {% if 'okra' in profile.disliked_foods %}checked{% endif %}>
+          <span class="choice-text">Okra (Bhindi)</span>
+        </label>
+        <label class="choice-label">
+          <input type="checkbox" name="disliked_foods" value="bottle gourd" {% if 'bottle gourd' in profile.disliked_foods %}checked{% endif %}>
+          <span class="choice-text">Bottle Gourd (Lauki)</span>
+        </label>
+        <label class="choice-label">
+          <input type="checkbox" name="disliked_ingredients" value="mushroom" {% if 'mushroom' in profile.disliked_ingredients %}checked{% endif %}>
+          <span class="choice-text">Mushroom</span>
+        </label>
+      </div>
+
+      <div class="form-group" style="margin-top: 15px;">
+        <label class="form-label">Other Disliked Ingredients (Comma Separated)</label>
+        <input type="text" name="disliked_custom" class="form-input" placeholder="e.g. capsicum, coconut, methi">
+      </div>
+    </div>
+
+    <!-- Step 6: Likes -->
+    <div class="step-pane" id="step6">
+      <h2 class="step-title">👍 Favourites & Preferred Ingredients</h2>
+      <p class="step-desc">Foods and flavors you love. These dishes earn priority score bonuses.</p>
+
+      <div class="choice-grid">
+        <label class="choice-label">
+          <input type="checkbox" name="liked_foods" value="khichdi" {% if 'khichdi' in profile.liked_foods %}checked{% endif %}>
+          <span class="choice-text">Moong Dal Khichdi</span>
+        </label>
+        <label class="choice-label">
+          <input type="checkbox" name="liked_foods" value="paneer" {% if 'paneer' in profile.liked_foods %}checked{% endif %}>
+          <span class="choice-text">Paneer</span>
+        </label>
+        <label class="choice-label">
+          <input type="checkbox" name="liked_foods" value="idli" {% if 'idli' in profile.liked_foods %}checked{% endif %}>
+          <span class="choice-text">Idli / Sambar</span>
+        </label>
+        <label class="choice-label">
+          <input type="checkbox" name="liked_foods" value="poha" {% if 'poha' in profile.liked_foods %}checked{% endif %}>
+          <span class="choice-text">Poha</span>
+        </label>
+        <label class="choice-label">
+          <input type="checkbox" name="liked_ingredients" value="spinach" {% if 'spinach' in profile.liked_ingredients %}checked{% endif %}>
+          <span class="choice-text">Spinach (Palak)</span>
+        </label>
+        <label class="choice-label">
+          <input type="checkbox" name="liked_ingredients" value="almond" {% if 'almond' in profile.liked_ingredients %}checked{% endif %}>
+          <span class="choice-text">Almonds & Nuts</span>
+        </label>
+        <label class="choice-label">
+          <input type="checkbox" name="liked_ingredients" value="turmeric" {% if 'turmeric' in profile.liked_ingredients %}checked{% endif %}>
+          <span class="choice-text">Turmeric & Spices</span>
+        </label>
+      </div>
+
+      <div class="form-group" style="margin-top: 15px;">
+        <label class="form-label">Other Preferred Foods/Ingredients (Comma Separated)</label>
+        <input type="text" name="liked_custom" class="form-input" placeholder="e.g. oats, amla, ginger, curd">
+      </div>
+    </div>
+
+    <!-- Step 7: Location -->
+    <div class="step-pane" id="step7">
+      <h2 class="step-title">📍 Location & Live Weather</h2>
+      <p class="step-desc">Allows NutriWise to factor in real-time temperature, rain, and humidity into today's meal recommendations.</p>
+
+      <div style="margin-bottom: 20px;">
+        <button type="button" class="btn btn-secondary" onclick="detectLocation()" style="width: 100%; border: 1px dashed var(--primary);">
+          🎯 Auto-Detect My Current Location
+        </button>
+        <div id="geoStatus" style="display:none; margin-top: 10px;"></div>
+      </div>
+
+      <input type="hidden" name="latitude" id="latInput" value="{{ profile.latitude|default:'' }}">
+      <input type="hidden" name="longitude" id="lonInput" value="{{ profile.longitude|default:'' }}">
+
+      <div class="form-group">
+        <label class="form-label">City Name (or edit manual override)</label>
+        <input type="text" name="location_city" id="cityInput" class="form-input" value="{{ profile.location_city|default:'' }}" placeholder="e.g. Mumbai, Bengaluru, Delhi">
+      </div>
+      <div class="form-group">
+        <label class="form-label">State / Region</label>
+        <input type="text" name="location_state" id="stateInput" class="form-input" value="{{ profile.location_state|default:'' }}" placeholder="e.g. Maharashtra, Karnataka">
+      </div>
+    </div>
+
+    <!-- Navigation Buttons -->
+    <div class="wizard-nav">
+      <button type="button" class="btn btn-secondary" id="prevBtn" onclick="prevStep()">← Previous</button>
+      <button type="button" class="btn btn-primary" id="nextBtn" onclick="nextStep()">Next Step →</button>
+      <button type="submit" class="btn btn-accent" id="submitBtn" style="display:none;">Save & Generate My Diet Plan 🚀</button>
+    </div>
+  </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'js/onboarding.js' %}"></script>
+{% endblock %}

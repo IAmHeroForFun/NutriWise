@@ -1,0 +1,68 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}NutriWise — Source-Based Dietary Guidance{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🥗</text></svg>">
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+  <!-- Navbar -->
+  <header class="navbar">
+    <div class="container nav-container">
+      <a href="{% url 'core:landing' %}" class="brand">
+        <span class="brand-icon">🥗</span>
+        <span>NutriWise</span>
+      </a>
+      <nav class="nav-links">
+        {% if user.is_authenticated %}
+          <a href="{% url 'core:dashboard' %}" class="nav-link">Daily Plan</a>
+          <a href="{% url 'core:onboarding' %}" class="nav-link">My Preferences</a>
+          {% if user.is_staff %}
+            <a href="/admin/" class="nav-link" style="color: var(--accent); font-weight: 600;">Admin Panel</a>
+          {% endif %}
+          <form method="POST" action="{% url 'core:logout' %}" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-secondary btn-sm">Log out</button>
+          </form>
+        {% else %}
+          <a href="{% url 'core:login' %}" class="nav-link">Sign In</a>
+          <a href="{% url 'core:register' %}" class="btn btn-primary btn-sm">Get Started</a>
+        {% endif %}
+      </nav>
+    </div>
+  </header>
+
+  <!-- Flash Messages -->
+  {% if messages %}
+    <div class="container alerts-container">
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <!-- Main Body Content -->
+  <main class="main-content">
+    <div class="container">
+      {% block content %}{% endblock %}
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <p><strong>NutriWise</strong> — Deterministic, source-based dietary recommendations extracted directly from authoritative books.</p>
+      <p class="disclaimer">Disclaimer: This web application provides non-generative, educational dietary suggestions based on reference texts. It does not provide medical diagnoses or prescriptions.</p>
+    </div>
+  </footer>
+
+  {% block scripts %}{% endblock %}
+</body>
+</html>

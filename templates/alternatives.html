@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+
+{% block title %}Alternatives for {{ original_food.name }} — NutriWise{% endblock %}
+
+{% block content %}
+<div class="alt-header">
+  <a href="{% url 'core:dashboard' %}" style="color: var(--primary); font-size: 0.9rem; font-weight: 600; text-decoration: none;">&larr; Back to Today's Plan</a>
+  <h1 style="font-size: 2rem; color: var(--primary-dark); margin-top: 10px; margin-bottom: 6px;">
+    Can't Make <strong>{{ original_food.name }}</strong>?
+  </h1>
+  <p style="color: var(--text-muted); font-size: 1.05rem;">
+    Here are verified substitute dishes from authoritative books sharing the same ingredients, fully safe for your diet profile.
+  </p>
+</div>
+
+<!-- Primary Alternatives -->
+<h2 style="font-size: 1.4rem; color: var(--primary-dark); margin-bottom: 15px;">
+  🔄 Substitute Dishes With Shared Ingredients
+</h2>
+
+{% if alternatives %}
+  <div class="alt-grid">
+    {% for alt in alternatives %}
+      <div class="food-card">
+        <div class="food-card-top">
+          <a href="{% url 'core:food_detail' alt.food.id %}" class="food-card-name">{{ alt.food.name }}</a>
+          <span class="score-badge">{{ alt.overlap_count }} Shared Ingredient{{ alt.overlap_count|pluralize }}</span>
+        </div>
+
+        {% if alt.food.summary %}
+          <p class="food-summary">{{ alt.food.summary|truncatewords:20 }}</p>
+        {% endif %}
+
+        <div style="margin-bottom: 12px;">
+          <strong style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Shared with {{ original_food.name }}:</strong>
+          <div class="ingredients-wrap" style="margin-top: 5px;">
+            {% for s_ing in alt.shared %}
+              <span class="ing-pill" style="background: #e0f2fe; color: #0369a1; font-weight: 600;">✓ {{ s_ing }}</span>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="food-card-actions">
+          <a href="{% url 'core:food_detail' alt.food.id %}" class="btn btn-secondary btn-sm">View Full Recipe & Citation &rarr;</a>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <div style="background: var(--card-bg); padding: 25px; border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 35px;">
+    <p style="color: var(--text-muted);">
+      No dishes with direct ingredient overlap were found that satisfy all your hard diet and allergy constraints.
+    </p>
+  </div>
+{% endif %}
+
+<!-- Per-Ingredient Alternative Usages -->
+{% if ingredient_uses %}
+  <h2 style="font-size: 1.4rem; color: var(--primary-dark); margin-top: 30px; margin-bottom: 15px;">
+    🥘 How Else Can You Use These Ingredients?
+  </h2>
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
+    {% for ing_name, dish_list in ingredient_uses.items %}
+      <div style="background: var(--card-bg); padding: 20px; border-radius: var(--radius); border: 1px solid var(--border);">
+        <h3 style="font-size: 1.1rem; color: var(--primary); margin-bottom: 12px; border-bottom: 1px solid var(--border); padding-bottom: 6px;">
+          Dishes Using <strong>{{ ing_name }}</strong>
+        </h3>
+        <ul style="list-style: none; padding-left: 0;">
+          {% for d in dish_list %}
+            <li style="margin-bottom: 8px;">
+              <a href="{% url 'core:food_detail' d.id %}" style="text-decoration: none; color: var(--text-main); font-weight: 600; display: flex; justify-content: space-between;">
+                <span>{{ d.name }}</span>
+                <span style="font-size: 0.8rem; color: var(--text-muted);">{{ d.category|title }} &rarr;</span>
+              </a>
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+<div style="margin-top: 40px;">
+  <a href="{% url 'core:dashboard' %}" class="btn btn-primary">&larr; Return to Today's Meal Plan</a>
+</div>
+{% endblock %}

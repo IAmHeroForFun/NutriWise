@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block title %}Sign In — NutriWise{% endblock %}
+
+{% block content %}
+<div class="auth-box">
+  <h1 class="auth-title">Welcome Back</h1>
+  <p class="step-desc">Sign in to access your source-backed daily diet plan.</p>
+
+  <form method="POST">
+    {% csrf_token %}
+    <div class="form-group">
+      <label class="form-label">Username</label>
+      <input type="text" name="username" class="form-input" required autofocus>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Password</label>
+      <input type="password" name="password" class="form-input" required>
+    </div>
+    <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">Sign In</button>
+  </form>
+
+  <p style="margin-top: 20px; font-size: 0.9rem; text-align: center; color: var(--text-muted);">
+    New to NutriWise? <a href="{% url 'core:register' %}" style="color: var(--primary); font-weight: 600;">Create an account</a>
+  </p>
+</div>
+{% endblock %}

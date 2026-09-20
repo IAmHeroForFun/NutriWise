@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block title %}NutriWise — Authoritative Dietary Guidance{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <div class="hero-badge">📖 100% Source-Based & Deterministic</div>
+  <h1 class="hero-title">Your Daily Diet, Rooted in<br>Authoritative Nutrition Books</h1>
+  <p class="hero-sub">
+    No generative hallucinations. No random AI chatbots. NutriWise matches your specific health conditions,
+    allergies, and food preferences with verified reference knowledge and live weather.
+  </p>
+  <div class="hero-cta">
+    <a href="{% url 'core:register' %}" class="btn btn-primary">Start Your Custom Diet Plan →</a>
+    <a href="{% url 'core:login' %}" class="btn btn-secondary">Sign In</a>
+  </div>
+
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon">📚</div>
+      <h3 class="feature-title">Authoritative Knowledge</h3>
+      <p class="feature-desc">All dietary knowledge is extracted directly from trusted clinical and traditional nutrition texts with direct page citations.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🛡️</div>
+      <h3 class="feature-title">Strict Health & Allergy Filters</h3>
+      <p class="feature-desc">Binary exclusion filters ensure zero accidental exposure to your allergens or foods contraindicated for your medical conditions.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🌧️</div>
+      <h3 class="feature-title">Season & Weather Aware</h3>
+      <p class="feature-desc">Integrates live local temperature and current season to prioritize cooling, warming, or rain-appropriate meals.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🔄</div>
+      <h3 class="feature-title">Ingredient Substitutes</h3>
+      <p class="feature-desc">Can't cook a recommended dish? Instantly view alternative recipes using the same ingredients you already have.</p>
+    </div>
+  </div>
+</section>
+{% endblock %}
