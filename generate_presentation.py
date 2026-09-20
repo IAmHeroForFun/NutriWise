@@ -82,7 +82,7 @@ def build_deck():
         tf = tb.text_frame
         tf.margin_left = tf.margin_top = tf.margin_right = tf.margin_bottom = 0
         p = tf.paragraphs[0]
-        p.text = f"NutriWise  |  Team DECODEP  |  Hackday 1.0 Final Submission                                                                   Slide {current_num} of 7"
+        p.text = f"NutriWise  |  Team ATOMIX  |  Hackday 1.0 Final Submission                                                                   Slide {current_num} of 7"
         p.font.size = Pt(9.5)
         p.font.color.rgb = TEXT_MUTED
 
@@ -122,7 +122,30 @@ def build_deck():
     # =========================================================================
     s1 = prs.slides.add_slide(blank_layout)
     set_bg(s1)
-    add_header(s1, "1️⃣  Problem Statement", "The Crisis of Unverified & Hallucinatory AI in Nutrition",
+
+    # Prominent Team Badge on 1st Slide (Top Right)
+    team_badge = s1.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(10.15), Inches(0.32), Inches(2.52), Inches(0.68))
+    team_badge.fill.solid()
+    team_badge.fill.fore_color.rgb = PRIMARY_DARK
+    team_badge.line.color.rgb = ACCENT_CORAL
+    team_badge.line.width = Pt(1.5)
+    tf_tb = team_badge.text_frame
+    tf_tb.word_wrap = True
+    tf_tb.margin_left = tf_tb.margin_right = tf_tb.margin_top = tf_tb.margin_bottom = 0
+    p_tb1 = tf_tb.paragraphs[0]
+    p_tb1.text = "⚡ TEAM NAME"
+    p_tb1.font.size = Pt(8.5)
+    p_tb1.font.bold = True
+    p_tb1.font.color.rgb = ACCENT_CORAL
+    p_tb1.alignment = PP_ALIGN.CENTER
+    p_tb2 = tf_tb.add_paragraph()
+    p_tb2.text = "ATOMIX"
+    p_tb2.font.size = Pt(16)
+    p_tb2.font.bold = True
+    p_tb2.font.color.rgb = WHITE
+    p_tb2.alignment = PP_ALIGN.CENTER
+
+    add_header(s1, "TEAM ATOMIX  |  1️⃣  Problem Statement", "The Crisis of Unverified & Hallucinatory AI in Nutrition",
                "Generic AI chatbots give ungrounded, dangerous advice with zero medical accountability.")
     add_footer(s1, 1)
 

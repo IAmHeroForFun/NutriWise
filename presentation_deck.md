@@ -1,6 +1,6 @@
 # NutriWise — Official Hackday 1.0 Presentation Deck (INR & Zero-Blank-Space Edition)
 
-**Team:** DECODEP  
+**Team:** ATOMIX  
 **Project:** NutriWise  
 **Format:** 7 Slides (16:9 Widescreen)  
 **File:** [`NutriWise_Hackday_Presentation.pptx`](file:///mnt/Work/projects/hackday1.0/NutriWise_Hackday_Presentation.pptx)  
