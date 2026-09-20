@@ -122,7 +122,8 @@ async function markCantMake(foodId, foodName) {
 
 function scrollToElement(elem) {
   if (!elem) return;
-  const headerOffset = window.innerWidth <= 860 ? 130 : 85;
+  const isMobile = window.innerWidth <= 992;
+  const headerOffset = isMobile ? 135 : 95;
   const elementPosition = elem.getBoundingClientRect().top;
   const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
 
@@ -148,10 +149,12 @@ function showTab(targetId) {
   document.querySelectorAll('.food-card').forEach(card => card.style.display = 'flex');
 
   if (targetId === 'health-ingredients-hub') {
-    if (mealsContainer) mealsContainer.style.display = 'none';
+    if (mealsContainer) mealsContainer.style.display = 'block';
     if (healthHub) {
       healthHub.style.display = 'block';
       scrollToElement(healthHub);
+      healthHub.classList.add('meal-highlight-pulse');
+      setTimeout(() => healthHub.classList.remove('meal-highlight-pulse'), 1200);
     }
     if (activeFilterLabel) {
       activeFilterLabel.innerHTML = '🌿 <strong>Health & Ingredients Explorer</strong> &mdash; Select any ingredient to see therapeutic benefits and matching dishes';
@@ -161,29 +164,31 @@ function showTab(targetId) {
   }
 
   // Else showing meals
-  if (healthHub) healthHub.style.display = 'none';
   if (mealsContainer) mealsContainer.style.display = 'block';
 
+  // KEEP ALL MEAL PANES VISIBLE in document flow so page stays solid and smooth scrolling works flawlessly
   const mealPanes = document.querySelectorAll('.meal-section-pane');
+  mealPanes.forEach(pane => {
+    pane.style.display = 'block';
+  });
 
   if (targetId === 'all-meals-view') {
-    mealPanes.forEach(pane => pane.style.display = 'block');
     if (activeFilterLabel) activeFilterLabel.innerText = 'Displaying all curated culinary dishes for today';
     if (resetFilterBtn) resetFilterBtn.style.display = 'none';
-    const firstMeal = document.querySelector('.meal-section-pane');
+    const firstMeal = document.querySelector('.meal-section-pane') || mealsContainer;
     if (firstMeal) scrollToElement(firstMeal);
   } else {
-    // Show specific meal time
-    mealPanes.forEach(pane => {
-      pane.style.display = (pane.id === targetId) ? 'block' : 'none';
-    });
     const mealName = targetId.replace('meal-', '').toUpperCase();
-    if (activeFilterLabel) activeFilterLabel.innerHTML = `Showing dishes for <strong>${mealName}</strong>`;
+    if (activeFilterLabel) {
+      activeFilterLabel.innerHTML = `Viewing <strong>${mealName}</strong> choices &mdash; <a href="javascript:void(0)" onclick="showTab('all-meals-view')" style="color:var(--primary);text-decoration:underline;">View All Meals</a>`;
+    }
     if (resetFilterBtn) resetFilterBtn.style.display = 'inline-block';
 
     const targetPane = document.getElementById(targetId);
     if (targetPane) {
       scrollToElement(targetPane);
+      targetPane.classList.add('meal-highlight-pulse');
+      setTimeout(() => targetPane.classList.remove('meal-highlight-pulse'), 1200);
     }
   }
 }
@@ -263,3 +268,30 @@ async function sendFeedback(foodId, action, btnElem) {
     console.error('Feedback error:', err);
   }
 }
+
+// 9. ScrollSpy to dynamically highlight active meal tab as user scrolls
+function initScrollSpy() {
+  const sections = document.querySelectorAll('.meal-section-pane');
+  if (!sections.length || !('IntersectionObserver' in window)) return;
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = entry.target.id;
+        document.querySelectorAll('.meal-nav-item').forEach(btn => {
+          btn.classList.toggle('active', btn.getAttribute('data-target') === id);
+        });
+      }
+    });
+  }, {
+    root: null,
+    rootMargin: '-15% 0px -65% 0px',
+    threshold: 0
+  });
+
+  sections.forEach(section => observer.observe(section));
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  initScrollSpy();
+});

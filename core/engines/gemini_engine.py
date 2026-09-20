@@ -86,7 +86,7 @@ def generate_grounded_plan(profile, candidate_foods, weather_info, season, targe
         "Respond ONLY with a valid JSON object matching the requested schema."
     )
 
-    meal_types = [target_meal] if target_meal else ['breakfast', 'snack', 'lunch', 'dinner']
+    meal_types = [target_meal] if target_meal else ['breakfast', 'lunch', 'snack', 'dinner']
 
     prompt = (
         f"USER PROFILE:\n"

@@ -166,7 +166,7 @@ def _generate_plan(profile):
 
     # 1. First, populate safe matching candidate foods partitioned by meal slot
     foods_by_name = {f.name.lower(): f for f in available_foods}
-    for meal_type in ['breakfast', 'snack', 'lunch', 'dinner']:
+    for meal_type in ['breakfast', 'lunch', 'snack', 'dinner']:
         meal_candidates = [f for f in available_foods if meal_type in (f.meal_types or [])]
         if len(meal_candidates) < 3:
             meal_candidates = available_foods
