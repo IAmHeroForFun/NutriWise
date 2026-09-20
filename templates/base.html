@@ -5,44 +5,65 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}NutriWise — Source-Based Dietary Guidance{% endblock %}</title>
+  
+  <!-- Modern Google Fonts: Outfit for display headers + Plus Jakarta Sans for UI -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Hardware-Accelerated Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  
   <link rel="stylesheet" href="{% static 'css/style.css' %}">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🥗</text></svg>">
   {% block extra_head %}{% endblock %}
 </head>
 <body>
 
-  <!-- Navbar -->
+  <!-- Glassmorphic Header Navbar -->
   <header class="navbar">
     <div class="container nav-container">
       <a href="{% url 'core:landing' %}" class="brand">
-        <span class="brand-icon">🥗</span>
-        <span>NutriWise</span>
+        <div class="brand-badge">
+          <span class="brand-icon">🥗</span>
+        </div>
+        <div class="brand-text">
+          <span class="brand-title">NutriWise</span>
+          <span class="brand-tagline">Clinical Nutrition Intelligence</span>
+        </div>
       </a>
       <nav class="nav-links">
         {% if user.is_authenticated %}
-          <a href="{% url 'core:dashboard' %}" class="nav-link">Daily Plan</a>
-          <a href="{% url 'core:onboarding' %}" class="nav-link">My Preferences</a>
+          <a href="{% url 'core:dashboard' %}" class="nav-link nav-link-active">
+            <span class="nav-icon">✨</span> Daily Plan
+          </a>
+          <a href="{% url 'core:onboarding' %}" class="nav-link">
+            <span class="nav-icon">⚙️</span> Preferences
+          </a>
           {% if user.is_staff %}
-            <a href="/admin/" class="nav-link" style="color: var(--accent); font-weight: 600;">Admin Panel</a>
+            <a href="/admin/" class="nav-link admin-pill">
+              <span class="nav-icon">🛡️</span> Admin
+            </a>
           {% endif %}
           <form method="POST" action="{% url 'core:logout' %}" style="display:inline;">
             {% csrf_token %}
-            <button type="submit" class="btn btn-secondary btn-sm">Log out</button>
+            <button type="submit" class="btn btn-ghost btn-sm">Log out</button>
           </form>
         {% else %}
           <a href="{% url 'core:login' %}" class="nav-link">Sign In</a>
-          <a href="{% url 'core:register' %}" class="btn btn-primary btn-sm">Get Started</a>
+          <a href="{% url 'core:register' %}" class="btn btn-primary btn-sm btn-glow">Get Started</a>
         {% endif %}
       </nav>
     </div>
   </header>
 
-  <!-- Flash Messages -->
+  <!-- Flash Notifications -->
   {% if messages %}
     <div class="container alerts-container">
       {% for message in messages %}
         <div class="alert alert-{{ message.tags }}">
-          {{ message }}
+          <span class="alert-icon">{% if message.tags == 'success' %}✓{% elif message.tags == 'error' %}⚠️{% else %}ℹ️{% endif %}</span>
+          <span>{{ message }}</span>
         </div>
       {% endfor %}
     </div>
@@ -50,16 +71,32 @@
 
   <!-- Main Body Content -->
   <main class="main-content">
-    <div class="container">
-      {% block content %}{% endblock %}
-    </div>
+    {% block content %}{% endblock %}
   </main>
 
-  <!-- Footer -->
+  <!-- Artistic Footer -->
   <footer class="footer">
-    <div class="container">
-      <p><strong>NutriWise</strong> — Deterministic, source-based dietary recommendations extracted directly from authoritative books.</p>
-      <p class="disclaimer">Disclaimer: This web application provides non-generative, educational dietary suggestions based on reference texts. It does not provide medical diagnoses or prescriptions.</p>
+    <div class="container footer-grid">
+      <div class="footer-brand-col">
+        <div class="brand footer-brand">
+          <span class="brand-icon">🥗</span>
+          <span class="brand-title">NutriWise</span>
+        </div>
+        <p class="footer-desc">Source-grounded, clinical dietary recommendations extracted directly from authoritative nutrition literature and tuned dynamically to weather and metabolic bio-individuality.</p>
+      </div>
+      <div class="footer-links-col">
+        <h4>System Pillars</h4>
+        <ul>
+          <li>📚 Pure Source Extraction (Zero Hallucinations)</li>
+          <li>🌦️ Thermal Weather & Seasonal Alignment</li>
+          <li>🛡️ Deterministic Clinical Safety Shields</li>
+          <li>⚡ Cache-First < 15ms Sub-second Serving</li>
+        </ul>
+      </div>
+    </div>
+    <div class="container footer-bottom">
+      <p class="disclaimer">⚠️ <strong>Disclaimer:</strong> NutriWise provides non-generative, educational dietary suggestions referenced directly from published medical and nutritional books. It does not substitute for personalized medical diagnosis, clinical treatment, or prescription therapy.</p>
+      <p class="copyright">&copy; 2026 NutriWise. Empowering healthier lives through verified nutritional wisdom.</p>
     </div>
   </footer>
 

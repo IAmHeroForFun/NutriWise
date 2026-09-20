@@ -1,41 +1,178 @@
 {% extends 'base.html' %}
+{% load static %}
 
-{% block title %}NutriWise — Authoritative Dietary Guidance{% endblock %}
+{% block title %}NutriWise — Source-Based Clinical Nutrition Intelligence{% endblock %}
 
 {% block content %}
-<section class="hero">
-  <div class="hero-badge">📖 100% Source-Based & Deterministic</div>
-  <h1 class="hero-title">Your Daily Diet, Rooted in<br>Authoritative Nutrition Books</h1>
-  <p class="hero-sub">
-    No generative hallucinations. No random AI chatbots. NutriWise matches your specific health conditions,
-    allergies, and food preferences with verified reference knowledge and live weather.
-  </p>
-  <div class="hero-cta">
-    <a href="{% url 'core:register' %}" class="btn btn-primary">Start Your Custom Diet Plan →</a>
-    <a href="{% url 'core:login' %}" class="btn btn-secondary">Sign In</a>
+<!-- Hero Section -->
+<section class="artistic-hero">
+  <div class="hero-content">
+    <div class="hero-badge-pill">
+      <span class="badge-pulse"></span>
+      <span>100% Book-Grounded &bull; Zero Hallucinations</span>
+    </div>
+    <h1 class="hero-title">
+      Your Daily Nutrition, <br>
+      <span class="gradient-text">Rooted in Trusted Wisdom</span>
+    </h1>
+    <p class="hero-subtitle">
+      No random AI chatbots or synthetic diets. NutriWise cross-references your medical conditions, allergies, and metabolic profile directly against published nutrition books, real-time outdoor weather, and seasonal synergy.
+    </p>
+
+    <div class="hero-cta-group">
+      <a href="{% url 'core:register' %}" class="btn btn-primary btn-lg btn-glow">
+        Start Your Free Plan &rarr;
+      </a>
+      <a href="{% url 'core:login' %}" class="btn btn-outline btn-lg">
+        Sign In to Portal
+      </a>
+    </div>
+
+    <!-- Trust Stats Bar -->
+    <div class="hero-stats-row">
+      <div class="stat-box">
+        <span class="stat-number">60+</span>
+        <span class="stat-label">Verified Dishes</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-box">
+        <span class="stat-number">100%</span>
+        <span class="stat-label">Allergy Shield</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-box">
+        <span class="stat-number">&lt;15ms</span>
+        <span class="stat-label">Sub-second Serving</span>
+      </div>
+    </div>
   </div>
 
-  <div class="features-grid">
-    <div class="feature-card">
-      <div class="feature-icon">📚</div>
-      <h3 class="feature-title">Authoritative Knowledge</h3>
-      <p class="feature-desc">All dietary knowledge is extracted directly from trusted clinical and traditional nutrition texts with direct page citations.</p>
+  <!-- Hero Visual Showcase Card -->
+  <div class="hero-visual-card">
+    <div class="visual-card-inner">
+      <div class="visual-card-image-wrap">
+        <img src="https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&w=800&q=85" 
+             alt="Spiced Moong Dal Khichdi" 
+             class="visual-card-img">
+        <div class="visual-card-tag">⭐ Today's Curated Pick</div>
+      </div>
+      <div class="visual-card-details">
+        <div class="visual-card-top-row">
+          <h3 class="visual-dish-name">Spiced Moong Dal Khichdi</h3>
+          <span class="score-badge-glow">96/100</span>
+        </div>
+        <p class="visual-dish-desc">
+          Tri-doshic restorative meal balancing proteins and complex carbohydrates for optimal glycemic control.
+        </p>
+
+        <!-- Mini Nutritional Chart Pill -->
+        <div class="visual-chart-pill">
+          <div class="mini-macro-bar">
+            <span class="bar-carb" style="width: 50%;" title="Carbs: 50%"></span>
+            <span class="bar-protein" style="width: 25%;" title="Protein: 25%"></span>
+            <span class="bar-fat" style="width: 15%;" title="Healthy Fats: 15%"></span>
+            <span class="bar-fiber" style="width: 10%;" title="Fiber: 10%"></span>
+          </div>
+          <div class="mini-macro-labels">
+            <span>Carbs 50%</span>
+            <span>Protein 25%</span>
+            <span>Fats 15%</span>
+            <span>Fiber 10%</span>
+          </div>
+        </div>
+
+        <div class="visual-citation-pill">
+          📖 <em>Ayurvedic Cooking for Self-Healing</em> &bull; Page 112
+        </div>
+      </div>
     </div>
-    <div class="feature-card">
-      <div class="feature-icon">🛡️</div>
-      <h3 class="feature-title">Strict Health & Allergy Filters</h3>
-      <p class="feature-desc">Binary exclusion filters ensure zero accidental exposure to your allergens or foods contraindicated for your medical conditions.</p>
+  </div>
+</section>
+
+<!-- Visual Health & Science Highlights -->
+<section class="section-container">
+  <div class="section-header-center">
+    <span class="section-tag">Clinical Methodology</span>
+    <h2 class="section-heading">How NutriWise Synthesizes Your Diet</h2>
+    <p class="section-subtext">Four deterministic layers protecting your clinical safety and maximizing metabolic synergy.</p>
+  </div>
+
+  <div class="artistic-features-grid">
+    <div class="artistic-feature-card">
+      <div class="feature-icon-bubble bubble-emerald">📚</div>
+      <h3 class="feature-card-title">Pure Reference Extraction</h3>
+      <p class="feature-card-text">Every single ingredient, cooking method, and health benefit is indexed from medical nutrition texts and traditional literature with exact page citations.</p>
     </div>
-    <div class="feature-card">
-      <div class="feature-icon">🌧️</div>
-      <h3 class="feature-title">Season & Weather Aware</h3>
-      <p class="feature-desc">Integrates live local temperature and current season to prioritize cooling, warming, or rain-appropriate meals.</p>
+
+    <div class="artistic-feature-card">
+      <div class="feature-icon-bubble bubble-coral">🛡️</div>
+      <h3 class="feature-card-title">Deterministic Safety Shield</h3>
+      <p class="feature-card-text">Hard exclusion filters immediately remove contraindicated foods and allergens before any scoring occurs, guaranteeing clinical peace of mind.</p>
     </div>
-    <div class="feature-card">
-      <div class="feature-icon">🔄</div>
-      <h3 class="feature-title">Ingredient Substitutes</h3>
-      <p class="feature-desc">Can't cook a recommended dish? Instantly view alternative recipes using the same ingredients you already have.</p>
+
+    <div class="artistic-feature-card">
+      <div class="feature-icon-bubble bubble-amber">🌦️</div>
+      <h3 class="feature-card-title">Thermal Climate Equilibrium</h3>
+      <p class="feature-card-text">Real-time local temperature and season data dynamically balance warming and cooling food properties (e.g., Pitta calming on hot afternoons).</p>
     </div>
+
+    <div class="artistic-feature-card">
+      <div class="feature-icon-bubble bubble-indigo">🔄</div>
+      <h3 class="feature-card-title">Substitutes & Food Recovery</h3>
+      <p class="feature-card-text">Missing ingredients? One click finds alternative dishes with matching nutrients, helping you cook fresh meals with what is already in your pantry.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Visual Culinary Gallery -->
+<section class="section-container gallery-section">
+  <div class="section-header-center">
+    <span class="section-tag">Curated Culinary Diversity</span>
+    <h2 class="section-heading">Wholesome Dishes Grounded in Science</h2>
+    <p class="section-subtext">Balanced, colorful, and naturally therapeutic.</p>
+  </div>
+
+  <div class="gallery-grid">
+    <div class="gallery-card">
+      <img src="https://images.unsplash.com/photo-1589301760014-d929f3979dbc?auto=format&fit=crop&w=600&q=80" alt="Poha" class="gallery-img">
+      <div class="gallery-info">
+        <h4>Vegetable Poha with Peanuts</h4>
+        <span>Breakfast &bull; Iron-Rich &bull; Light Digestibility</span>
+      </div>
+    </div>
+
+    <div class="gallery-card">
+      <img src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=600&q=80" alt="Salad" class="gallery-img">
+      <div class="gallery-info">
+        <h4>Sprouted Mung Salad</h4>
+        <span>Lunch &bull; Enzymatic Fiber &bull; Antioxidants</span>
+      </div>
+    </div>
+
+    <div class="gallery-card">
+      <img src="https://images.unsplash.com/photo-1576045057995-568f588f82fb?auto=format&fit=crop&w=600&q=80" alt="Palak" class="gallery-img">
+      <div class="gallery-info">
+        <h4>Spinach & Tofu Curry</h4>
+        <span>Dinner &bull; Plant Protein &bull; Folate Rich</span>
+      </div>
+    </div>
+
+    <div class="gallery-card">
+      <img src="https://images.unsplash.com/photo-1576092768241-dec231879fc3?auto=format&fit=crop&w=600&q=80" alt="Herbal Tea" class="gallery-img">
+      <div class="gallery-info">
+        <h4>Ginger Cumin Digestive Infusion</h4>
+        <span>Snack &bull; Anti-Inflammatory &bull; Metabolism</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Call to Action Banner -->
+<section class="cta-banner">
+  <div class="cta-content">
+    <h2>Experience Verified Nutrition Intelligence</h2>
+    <p>Build your custom health profile in 2 minutes and unlock today's weather-calibrated diet plan.</p>
+    <a href="{% url 'core:register' %}" class="btn btn-primary btn-lg btn-glow">Get Started Free &rarr;</a>
   </div>
 </section>
 {% endblock %}
