@@ -152,7 +152,7 @@ docker logs --tail 20 nutriwise_web
 Create your Django admin superuser:
 
 ```bash
-docker compose -f docker-compose.lightsail.yml exec web python manage.py createsuperuser
+docker compose -f docker-compose.lightsail.yml exec nutriwise_web python manage.py createsuperuser
 ```
 *(Enter your chosen admin username, email, and password).*
 
@@ -209,7 +209,7 @@ docker compose -f docker-compose.lightsail.yml up -d --build
 
 ### Restart Web Service:
 ```bash
-docker compose -f docker-compose.lightsail.yml restart web
+docker compose -f docker-compose.lightsail.yml restart nutriwise_web
 ```
 
 ### Backup Database:

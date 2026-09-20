@@ -8,7 +8,7 @@
 # ==============================================================================
 
 services:
-  web:
+  nutriwise_web:
     build:
       context: .
       dockerfile: Dockerfile
