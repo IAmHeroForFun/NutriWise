@@ -23,6 +23,7 @@
 | 10 | [10_deployment.md](./10_deployment.md) | Production deployment — Supabase PostgreSQL + hosting |
 | 11 | [USER_AND_ADMIN_GUIDE.md](./USER_AND_ADMIN_GUIDE.md) | Complete user operations & administrator source ingestion manual |
 | 12 | [LIGHTSAIL_DOCKER_HOSTING_GUIDE.md](./LIGHTSAIL_DOCKER_HOSTING_GUIDE.md) | Step-by-step AWS Lightsail Docker deployment + Let's Encrypt SSL setup |
+| 13 | [DEPLOY_LIGHTSAIL.md](../DEPLOY_LIGHTSAIL.md) | Quick-reference copy-paste deployment guide for `/opt/services/nutriwise` on Lightsail |
 
 ---
 

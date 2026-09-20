@@ -1,0 +1,33 @@
+version: '3.8'
+
+# ==============================================================================
+# NutriWise — AWS Lightsail Multi-Service Docker Compose
+# Use this compose configuration when deploying on a server with an existing
+# central Nginx reverse proxy connected to an external Docker network.
+# Usage:
+#   docker compose -f docker-compose.lightsail.yml up -d --build
+# ==============================================================================
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: nutriwise_web
+    restart: always
+    env_file:
+      - .env
+    environment:
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./staticfiles:/app/staticfiles
+      - ./media:/app/media
+      - ./data:/app/data
+    expose:
+      - "8000"
+    networks:
+      - omvi_blog_default
+
+networks:
+  omvi_blog_default:
+    external: true

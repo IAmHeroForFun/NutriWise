@@ -310,3 +310,131 @@ now = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
 shutil.copyfile('db.sqlite3', f'/app/data/backup_db_{now}.sqlite3')
 "
 ```
+
+---
+
+## 5. Multi-Service Co-Hosting Architecture (Shared Nginx & Networks)
+
+If your AWS Lightsail instance already hosts other web projects (e.g. under `/opt/services/` such as `omvi_blog` and `dns-stack`) with an existing central Nginx reverse proxy running on Docker, you should **not** bind ports `80` and `443` in NutriWise. Instead, run NutriWise as a backend web container attached to the shared Docker network.
+
+### Architecture Diagram
+
+```
+                       Internet (HTTPS Port 443 / HTTP Port 80)
+                                        │
+                                        ▼
+                  [ Central Nginx Container (Ports 80 & 443) ]
+                       (Network: omvi_blog_default)
+                                        │
+            ┌───────────────────────────┴───────────────────────────┐
+            ▼                                                       ▼
+    omvihub.in                                            nutriwise.omvihub.in
+  (omvi_blog:8000)                                        (nutriwise_web:8000)
+```
+
+### 1. Identifying the Shared Network
+On your Lightsail host, inspect the existing Nginx container:
+```bash
+docker inspect $(docker ps -q -f name=nginx) --format '{{range $k, $v := .NetworkSettings.Networks}}{{$k}} {{end}}'
+# Output: omvi_blog_default
+```
+
+### 2. The Multi-Service Compose File (`docker-compose.lightsail.yml`)
+NutriWise includes a dedicated compose file for this architecture:
+```yaml
+version: '3.8'
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: nutriwise_web
+    restart: always
+    env_file:
+      - .env
+    environment:
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./staticfiles:/app/staticfiles
+      - ./media:/app/media
+      - ./data:/app/data
+    expose:
+      - "8000"
+    networks:
+      - omvi_blog_default
+
+networks:
+  omvi_blog_default:
+    external: true
+```
+
+### 3. Deployment Workflow at `/opt/services/nutriwise`
+```bash
+cd /opt/services/nutriwise
+
+# Build & launch container
+docker compose -f docker-compose.lightsail.yml up -d --build
+
+# Run database migrations
+docker compose -f docker-compose.lightsail.yml exec web python manage.py migrate
+
+# Collect static files
+docker compose -f docker-compose.lightsail.yml exec web python manage.py collectstatic --noinput
+
+# Create admin user
+docker compose -f docker-compose.lightsail.yml exec web python manage.py createsuperuser
+```
+
+### 4. Central Nginx Upstream Configuration
+Place `nutriwise.conf` into your central Nginx `conf.d/` directory:
+```nginx
+upstream nutriwise {
+    server nutriwise_web:8000;
+}
+
+server {
+    listen 80;
+    server_name nutriwise.omvihub.in;
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    http2 on;
+    server_name nutriwise.omvihub.in;
+
+    ssl_certificate /etc/letsencrypt/live/nutriwise.omvihub.in/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/nutriwise.omvihub.in/privkey.pem;
+
+    client_max_body_size 50M;
+
+    location /static/ {
+        alias /opt/services/nutriwise/staticfiles/;
+        expires 30d;
+    }
+
+    location /media/ {
+        alias /opt/services/nutriwise/media/;
+        expires 7d;
+    }
+
+    location / {
+        proxy_pass http://nutriwise;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto https;
+        proxy_connect_timeout 60s;
+        proxy_read_timeout 120s;
+    }
+}
+```
+
+Reload Nginx:
+```bash
+docker exec $(docker ps -q -f name=nginx) nginx -t
+docker exec $(docker ps -q -f name=nginx) nginx -s reload
+```
+
+```
