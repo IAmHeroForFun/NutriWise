@@ -8,4 +8,5 @@ Pillow
 pytesseract
 gunicorn
 psycopg2-binary>=2.9.9
+whitenoise>=6.6.0
 
