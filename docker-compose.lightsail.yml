@@ -1,6 +1,5 @@
-version: '3.8'
-
 # ==============================================================================
+
 # NutriWise — AWS Lightsail Multi-Service Docker Compose
 # Use this compose configuration when deploying on a server with an existing
 # central Nginx reverse proxy connected to an external Docker network.
