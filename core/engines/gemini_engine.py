@@ -123,7 +123,7 @@ def generate_grounded_plan(profile, candidate_foods, weather_info, season, targe
     }
 
     models_to_try = []
-    for m in [model, 'gemini-3.6-flash', 'gemini-3.5-flash', 'gemini-flash-latest', 'gemini-2.5-flash-lite']:
+    for m in [model, 'gemini-3.5-flash', 'gemini-flash-latest', 'gemini-3.5-flash-lite']:
         if m and m not in models_to_try:
             models_to_try.append(m)
 

@@ -108,7 +108,7 @@ def onboarding(request):
         # Invalidate existing cached recommendation for today to reflect updated preferences
         RecommendationResult.objects.filter(user=request.user, generated_date=date.today()).delete()
 
-        messages.success(request, "Your diet profile has been configured!")
+        messages.success(request, "✨ Your dietary profile was saved! Gemini AI curated your clinical daily plan below.")
         return redirect('core:dashboard')
 
     return render(request, 'onboarding.html', {'profile': profile})

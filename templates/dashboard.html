@@ -179,13 +179,19 @@
       <button type="button" class="btn btn-secondary btn-sm" onclick="showTab('all-meals-view')" id="resetFilterBtn" style="display:none;">View All</button>
     </div>
 
-    <!-- Daily Clinical Synergy Note -->
+    <!-- Daily Clinical Synergy Note & AI Attribution -->
     {% if plan.overall_summary %}
       <div class="clinical-synergy-banner">
-        <div class="synergy-icon">💡</div>
-        <div class="synergy-body">
-          <strong class="synergy-title">Daily Clinical Synergy:</strong>
-          <span class="synergy-text">{{ plan.overall_summary }}</span>
+        <div class="synergy-header-row">
+          <span class="ai-source-pill">✨ Synthesized with Gemini AI</span>
+          <span class="ai-grounding-subtext">100% Grounded in Published Literature</span>
+        </div>
+        <div class="synergy-content-row">
+          <div class="synergy-icon">💡</div>
+          <div class="synergy-body">
+            <strong class="synergy-title">Daily Clinical Synergy:</strong>
+            <span class="synergy-text">{{ plan.overall_summary }}</span>
+          </div>
         </div>
       </div>
     {% endif %}
@@ -220,13 +226,16 @@
                       {% else %}
                         <span class="food-card-name">{{ item.name }}</span>
                       {% endif %}
-                      {% if item.is_featured %}
-                        <span class="featured-pill">⭐ Top Pick</span>
+                      {% if item.is_ai_grounded or item.is_featured %}
+                        <span class="featured-pill ai-pick-pill">✨ Gemini AI Pick</span>
                       {% endif %}
                     </div>
 
                     {% if item.clinical_rationale %}
-                      <p class="food-summary clinical-note">{{ item.clinical_rationale }}</p>
+                      <div class="ai-rationale-box">
+                        <span class="ai-rationale-tag">🤖 Clinical Rationale:</span>
+                        <p class="food-summary clinical-note">{{ item.clinical_rationale }}</p>
+                      </div>
                     {% elif item.summary %}
                       <p class="food-summary">{{ item.summary|truncatewords:24 }}</p>
                     {% endif %}

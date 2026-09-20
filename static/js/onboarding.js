@@ -94,4 +94,34 @@ function detectLocation() {
 
 document.addEventListener('DOMContentLoaded', () => {
   updateWizard();
+
+  const form = document.getElementById('onboardingForm');
+  if (form) {
+    form.addEventListener('submit', () => {
+      const overlay = document.getElementById('aiLoadingOverlay');
+      const submitBtn = document.getElementById('submitBtn');
+      if (overlay) {
+        overlay.style.display = 'flex';
+      }
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '🤖 Synthesizing AI Plan...';
+      }
+
+      const steps = [
+        '🔒 Cross-checking allergens & contraindications...',
+        '🌦️ Calibrating metabolic thermal equilibrium for local climate...',
+        '📚 Extracting verified dishes from medical nutrition literature...',
+        '✨ Google Gemini AI curating synergistic daily regimen...'
+      ];
+      let stepIdx = 0;
+      const stepText = document.getElementById('aiStepText');
+      if (stepText) {
+        setInterval(() => {
+          stepIdx = (stepIdx + 1) % steps.length;
+          stepText.innerText = steps[stepIdx];
+        }, 1800);
+      }
+    });
+  }
 });
