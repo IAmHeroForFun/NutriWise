@@ -82,7 +82,7 @@ def build_deck():
         tf = tb.text_frame
         tf.margin_left = tf.margin_top = tf.margin_right = tf.margin_bottom = 0
         p = tf.paragraphs[0]
-        p.text = f"NutriWise  |  Team ATOMIX  |  Hackday 1.0 Final Submission                                                                   Slide {current_num} of 7"
+        p.text = f"NutriWise  |  Team ATOMIX  |  Hackday 1.0                                                                                  Slide {current_num} of 7"
         p.font.size = Pt(9.5)
         p.font.color.rgb = TEXT_MUTED
 
