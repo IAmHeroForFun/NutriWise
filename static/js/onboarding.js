@@ -4,7 +4,7 @@ const totalSteps = 7;
 const stepTitles = [
   "Basic Stats",
   "Diet Type",
-  "Health Conditions",
+  "Health Conditions & Goals",
   "Allergies",
   "Dislikes",
   "Preferences & Likes",

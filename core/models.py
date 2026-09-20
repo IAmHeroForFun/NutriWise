@@ -91,8 +91,9 @@ class UserProfile(models.Model):
     # Step 2: Diet Type
     diet_type = models.CharField(max_length=50, choices=DIET_CHOICES, default='vegetarian')
 
-    # Step 3: Health Conditions
+    # Step 3: Health Conditions & Goals
     conditions = models.JSONField(default=list, blank=True)
+    goals = models.JSONField(default=list, blank=True)
 
     # Step 4: Allergies
     allergies = models.JSONField(default=list, blank=True)

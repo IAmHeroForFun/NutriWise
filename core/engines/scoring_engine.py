@@ -20,13 +20,15 @@ def score_food(food, profile, meal_type, season, weather_cat):
         score += WEIGHTS['meal_compatible']
         reasons.append(f"Good for {meal_type.title()}")
 
-    # 2. Medical condition bonuses
+    # 2. Medical condition & Wellness goal bonuses
     user_conditions = {str(c).strip().lower() for c in (profile.conditions or []) if str(c).strip()}
-    if user_conditions:
+    user_goals = {str(g).strip().lower() for g in getattr(profile, 'goals', []) if str(g).strip()}
+    combined_health_targets = user_conditions | user_goals
+    if combined_health_targets:
         rec_conditions = [
             c_obj.condition_name.replace('_', ' ').title()
             for c_obj in food.conditions.all()
-            if c_obj.condition_name.strip().lower() in user_conditions and c_obj.recommendation_type == 'RECOMMENDED'
+            if c_obj.condition_name.strip().lower() in combined_health_targets and c_obj.recommendation_type == 'RECOMMENDED'
         ]
         if rec_conditions:
             score += WEIGHTS['health_recommended']

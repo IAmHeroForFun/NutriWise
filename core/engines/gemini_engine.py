@@ -82,16 +82,18 @@ def generate_grounded_plan(profile, candidate_foods, weather_info, season, targe
         "You are NutriWise Clinical Dietitian. You curate balanced, health-promoting daily meals. "
         "CRITICAL GROUNDING RULE: You MUST ONLY select dishes and cite ingredients from the provided CANDIDATE FOODS catalog. "
         "DO NOT invent dishes, external recipes, or medical claims. Every recommendation must cite the exact source title and page number. "
-        "Ensure recommendations actively support the user's health conditions and suit the current weather and season. "
+        "Ensure recommendations strictly respect and support the user's clinical health conditions, actively advance their dietary wellness goals, and suit the current weather and season. "
         "Respond ONLY with a valid JSON object matching the requested schema."
     )
 
     meal_types = [target_meal] if target_meal else ['breakfast', 'lunch', 'snack', 'dinner']
 
+    user_goals = getattr(profile, 'goals', []) or []
     prompt = (
         f"USER PROFILE:\n"
         f"- Diet: {profile.diet_type}\n"
-        f"- Health Conditions: {', '.join(profile.conditions) if profile.conditions else 'None'}\n"
+        f"- Clinical Health Conditions to Protect Against: {', '.join(profile.conditions) if profile.conditions else 'None'}\n"
+        f"- Primary Dietary & Wellness Goals: {', '.join(user_goals) if user_goals else 'Balanced Daily Nutrition'}\n"
         f"- Allergies to Avoid (already filtered): {', '.join(profile.allergies) if profile.allergies else 'None'}\n"
         f"- Liked Ingredients: {', '.join(profile.liked_ingredients) if profile.liked_ingredients else 'Any'}\n"
         f"- Disliked Ingredients: {', '.join(profile.disliked_ingredients) if profile.disliked_ingredients else 'None'}\n"

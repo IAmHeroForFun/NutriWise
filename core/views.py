@@ -69,8 +69,26 @@ def onboarding(request):
         # Step 2: Diet Type
         profile.diet_type = request.POST.get('diet_type', 'vegetarian')
 
-        # Step 3: Health Conditions
-        profile.conditions = request.POST.getlist('conditions')
+        # Step 3: Health Conditions & Goals
+        selected_conditions = request.POST.getlist('conditions')
+        raw_custom_conds = request.POST.get('custom_conditions', '')
+        custom_conds = [x.strip() for x in raw_custom_conds.split(',') if x.strip()]
+        
+        all_conditions = []
+        for c in selected_conditions + custom_conds:
+            if c and c not in all_conditions:
+                all_conditions.append(c)
+        profile.conditions = all_conditions
+
+        selected_goals = request.POST.getlist('goals')
+        raw_custom_goals = request.POST.get('custom_goals', '')
+        custom_goals = [x.strip() for x in raw_custom_goals.split(',') if x.strip()]
+        
+        all_goals = []
+        for g in selected_goals + custom_goals:
+            if g and g not in all_goals:
+                all_goals.append(g)
+        profile.goals = all_goals
 
         # Step 4: Allergies
         profile.allergies = request.POST.getlist('allergies')
@@ -111,7 +129,17 @@ def onboarding(request):
         messages.success(request, "✨ Your dietary profile was saved! Gemini AI curated your clinical daily plan below.")
         return redirect('core:dashboard')
 
-    return render(request, 'onboarding.html', {'profile': profile})
+    PRESET_COND_SLUGS = {'diabetes', 'hypertension', 'cholesterol', 'thyroid', 'pcos', 'anemia', 'digestive', 'uric_acid', 'fatty_liver', 'weight_loss'}
+    PRESET_GOAL_SLUGS = {'weight_loss', 'muscle_building', 'gut_health', 'heart_health', 'energy', 'immunity'}
+
+    custom_conds = [c for c in (profile.conditions or []) if c.lower() not in PRESET_COND_SLUGS]
+    custom_goals = [g for g in (profile.goals or []) if g.lower() not in PRESET_GOAL_SLUGS]
+
+    return render(request, 'onboarding.html', {
+        'profile': profile,
+        'custom_conditions_str': ', '.join(custom_conds),
+        'custom_goals_str': ', '.join(custom_goals),
+    })
 
 @login_required
 def dashboard(request):

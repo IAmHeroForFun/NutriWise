@@ -76,3 +76,13 @@ class EngineTests(TestCase):
         alts = ingredient_matcher.find_alternatives(soup, self.profile)
         shared_dishes = [item['food'].name for item in alts['shared_ingredient_alternatives']]
         self.assertIn('Moong Dal Khichdi', shared_dishes)
+
+    def test_custom_conditions_and_goals_scoring(self):
+        FoodCondition.objects.create(food=self.khichdi, condition_name='weight_loss', recommendation_type='RECOMMENDED')
+        self.profile.goals = ['weight_loss']
+        self.profile.conditions = ['fatty_liver', 'diabetes']
+        self.profile.save()
+
+        score_res = scoring_engine.score_food(self.khichdi, self.profile, 'lunch', 'monsoon', 'RAINY')
+        reasons_text = " ".join(score_res['reasons'])
+        self.assertIn('Weight Loss', reasons_text)

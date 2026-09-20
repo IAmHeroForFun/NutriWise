@@ -76,45 +76,114 @@
       </div>
     </div>
 
-    <!-- Step 3: Health Conditions -->
+    <!-- Step 3: Health Conditions & Goals -->
     <div class="step-pane" id="step3">
       <h2 class="step-title">🏥 Health Conditions & Goals</h2>
-      <p class="step-desc">Select any conditions you are managing. Foods contraindicated in books are avoided; recommended ones are boosted.</p>
+      <p class="step-desc">Specify any clinical medical conditions to safeguard against, and your personal dietary wellness goals.</p>
 
-      <div class="choice-grid">
-        <label class="choice-label">
-          <input type="checkbox" name="conditions" value="diabetes" {% if 'diabetes' in profile.conditions %}checked{% endif %}>
-          <span class="choice-text">🩸 Diabetes / Blood Sugar</span>
-        </label>
-        <label class="choice-label">
-          <input type="checkbox" name="conditions" value="hypertension" {% if 'hypertension' in profile.conditions %}checked{% endif %}>
-          <span class="choice-text">❤️ Hypertension / High BP</span>
-        </label>
-        <label class="choice-label">
-          <input type="checkbox" name="conditions" value="cholesterol" {% if 'cholesterol' in profile.conditions %}checked{% endif %}>
-          <span class="choice-text">🫀 High Cholesterol</span>
-        </label>
-        <label class="choice-label">
-          <input type="checkbox" name="conditions" value="weight_loss" {% if 'weight_loss' in profile.conditions %}checked{% endif %}>
-          <span class="choice-text">⚖️ Weight Loss Goal</span>
-        </label>
-        <label class="choice-label">
-          <input type="checkbox" name="conditions" value="anemia" {% if 'anemia' in profile.conditions %}checked{% endif %}>
-          <span class="choice-text">💉 Anemia / Low Iron</span>
-        </label>
-        <label class="choice-label">
-          <input type="checkbox" name="conditions" value="thyroid" {% if 'thyroid' in profile.conditions %}checked{% endif %}>
-          <span class="choice-text">🦋 Thyroid Health</span>
-        </label>
-        <label class="choice-label">
-          <input type="checkbox" name="conditions" value="pcos" {% if 'pcos' in profile.conditions %}checked{% endif %}>
-          <span class="choice-text">🌸 PCOD / PCOS</span>
-        </label>
-        <label class="choice-label">
-          <input type="checkbox" name="conditions" value="digestive" {% if 'digestive' in profile.conditions %}checked{% endif %}>
-          <span class="choice-text">🫄 IBS / Digestive Sensitivity</span>
-        </label>
+      <!-- Part 1: Clinical Health Conditions -->
+      <div style="margin-bottom: 24px; padding: 18px; background: rgba(255,255,255,0.7); border: 1px solid var(--border); border-radius: 12px;">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom: 6px;">
+          <span style="font-size: 1.25rem;">🩺</span>
+          <h3 style="font-size: 1.05rem; font-weight: 700; color: var(--slate-900); margin: 0;">Part 1: Clinical Health Conditions</h3>
+        </div>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 14px;">
+          Dishes contraindicated in clinical literature will be strictly excluded; therapeutic foods will be prioritized.
+        </p>
+
+        <div class="choice-grid">
+          <label class="choice-label">
+            <input type="checkbox" name="conditions" value="diabetes" {% if 'diabetes' in profile.conditions %}checked{% endif %}>
+            <span class="choice-text">🩸 Diabetes / Blood Sugar</span>
+          </label>
+          <label class="choice-label">
+            <input type="checkbox" name="conditions" value="hypertension" {% if 'hypertension' in profile.conditions %}checked{% endif %}>
+            <span class="choice-text">❤️ Hypertension / High BP</span>
+          </label>
+          <label class="choice-label">
+            <input type="checkbox" name="conditions" value="cholesterol" {% if 'cholesterol' in profile.conditions %}checked{% endif %}>
+            <span class="choice-text">🫀 High Cholesterol</span>
+          </label>
+          <label class="choice-label">
+            <input type="checkbox" name="conditions" value="thyroid" {% if 'thyroid' in profile.conditions %}checked{% endif %}>
+            <span class="choice-text">🦋 Thyroid Health</span>
+          </label>
+          <label class="choice-label">
+            <input type="checkbox" name="conditions" value="pcos" {% if 'pcos' in profile.conditions %}checked{% endif %}>
+            <span class="choice-text">🌸 PCOD / PCOS</span>
+          </label>
+          <label class="choice-label">
+            <input type="checkbox" name="conditions" value="anemia" {% if 'anemia' in profile.conditions %}checked{% endif %}>
+            <span class="choice-text">💉 Anemia / Low Iron</span>
+          </label>
+          <label class="choice-label">
+            <input type="checkbox" name="conditions" value="digestive" {% if 'digestive' in profile.conditions %}checked{% endif %}>
+            <span class="choice-text">🫄 IBS / Acid Reflux / GERD</span>
+          </label>
+          <label class="choice-label">
+            <input type="checkbox" name="conditions" value="uric_acid" {% if 'uric_acid' in profile.conditions %}checked{% endif %}>
+            <span class="choice-text">🥩 Uric Acid / Gout</span>
+          </label>
+          <label class="choice-label">
+            <input type="checkbox" name="conditions" value="fatty_liver" {% if 'fatty_liver' in profile.conditions %}checked{% endif %}>
+            <span class="choice-text">🧪 Fatty Liver</span>
+          </label>
+        </div>
+
+        <div class="form-group" style="margin-top: 14px;">
+          <label class="form-label" style="font-size: 0.88rem; font-weight: 600;">➕ Have an unlisted medical condition? Type it here (Comma-Separated):</label>
+          <input type="text" name="custom_conditions" class="form-input" 
+                 placeholder="e.g. Kidney stones, Migraine, Eczema, Gallstones, Osteoporosis"
+                 value="{{ custom_conditions_str|default:'' }}">
+          <span style="font-size: 0.78rem; color: var(--text-muted); display: block; margin-top: 4px;">Gemini AI and rule engines will cross-reference your custom medical conditions against candidate dishes and ingredients.</span>
+        </div>
       </div>
+
+      <!-- Part 2: Primary Dietary & Wellness Goals -->
+      <div style="padding: 18px; background: rgba(255,255,255,0.7); border: 1px solid var(--border); border-radius: 12px;">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom: 6px;">
+          <span style="font-size: 1.25rem;">🎯</span>
+          <h3 style="font-size: 1.05rem; font-weight: 700; color: var(--slate-900); margin: 0;">Part 2: Primary Dietary & Wellness Goals</h3>
+        </div>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 14px;">
+          Select the wellness milestones you want your daily meals to actively target and optimize.
+        </p>
+
+        <div class="choice-grid">
+          <label class="choice-label">
+            <input type="checkbox" name="goals" value="weight_loss" {% if 'weight_loss' in profile.goals or 'weight_loss' in profile.conditions %}checked{% endif %}>
+            <span class="choice-text">⚖️ Weight Loss & Calorie Deficit</span>
+          </label>
+          <label class="choice-label">
+            <input type="checkbox" name="goals" value="muscle_building" {% if 'muscle_building' in profile.goals %}checked{% endif %}>
+            <span class="choice-text">💪 Muscle Building & High Protein</span>
+          </label>
+          <label class="choice-label">
+            <input type="checkbox" name="goals" value="gut_health" {% if 'gut_health' in profile.goals %}checked{% endif %}>
+            <span class="choice-text">🌿 Gut Health & Clean Digestion</span>
+          </label>
+          <label class="choice-label">
+            <input type="checkbox" name="goals" value="heart_health" {% if 'heart_health' in profile.goals %}checked{% endif %}>
+            <span class="choice-text">❤️ Heart Health & Longevity</span>
+          </label>
+          <label class="choice-label">
+            <input type="checkbox" name="goals" value="energy" {% if 'energy' in profile.goals %}checked{% endif %}>
+            <span class="choice-text">⚡ Sustained Energy & Vitality</span>
+          </label>
+          <label class="choice-label">
+            <input type="checkbox" name="goals" value="immunity" {% if 'immunity' in profile.goals %}checked{% endif %}>
+            <span class="choice-text">🛡️ Immunity & Anti-Inflammatory</span>
+          </label>
+        </div>
+
+        <div class="form-group" style="margin-top: 14px;">
+          <label class="form-label" style="font-size: 0.88rem; font-weight: 600;">➕ Other Personal Health Goals (Comma-Separated):</label>
+          <input type="text" name="custom_goals" class="form-input" 
+                 placeholder="e.g. Marathon endurance, Intermittent fasting compatibility, Clear skin"
+                 value="{{ custom_goals_str|default:'' }}">
+        </div>
+      </div>
+
     </div>
 
     <!-- Step 4: Allergies -->
