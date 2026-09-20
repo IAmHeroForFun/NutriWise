@@ -219,7 +219,11 @@
 
                   <div class="food-card-body">
                     <div class="food-card-top">
-                      <a href="{% url 'core:food_detail' item.id %}" class="food-card-name">{{ item.name }}</a>
+                      {% if item.id %}
+                        <a href="{% url 'core:food_detail' item.id %}" class="food-card-name">{{ item.name }}</a>
+                      {% else %}
+                        <span class="food-card-name">{{ item.name }}</span>
+                      {% endif %}
                       {% if item.is_featured %}
                         <span class="featured-pill">⭐ Top Pick</span>
                       {% endif %}
@@ -269,12 +273,14 @@
 
                     <!-- Bottom Actions -->
                     <div class="food-card-actions">
-                      <a href="{% url 'core:food_detail' item.id %}" class="btn btn-secondary btn-sm">Full Profile</a>
-                      <a href="javascript:void(0);"
-                         onclick="markCantMake({{ item.id }}, '{{ item.name|escapejs }}')"
-                         class="cant-make-link" title="Find dishes using the same ingredients">
-                        🔄 Alternatives
-                      </a>
+                      {% if item.id %}
+                        <a href="{% url 'core:food_detail' item.id %}" class="btn btn-secondary btn-sm">Full Profile</a>
+                        <a href="javascript:void(0);"
+                           onclick="markCantMake({{ item.id }}, '{{ item.name|escapejs }}')"
+                           class="cant-make-link" title="Find dishes using the same ingredients">
+                          🔄 Alternatives
+                        </a>
+                      {% endif %}
                     </div>
                   </div>
                 </div>
@@ -337,9 +343,13 @@
               <strong class="dishes-heading">Dishes using this:</strong>
               <div class="ing-dishes-list">
                 {% for dish in ing_data.dishes %}
-                  <a href="{% url 'core:food_detail' dish.id %}" class="ing-dish-link">
-                    🍲 {{ dish.name }}
-                  </a>
+                  {% if dish.id %}
+                    <a href="{% url 'core:food_detail' dish.id %}" class="ing-dish-link">
+                      🍲 {{ dish.name }}
+                    </a>
+                  {% else %}
+                    <span class="ing-dish-link">🍲 {{ dish.name }}</span>
+                  {% endif %}
                 {% endfor %}
               </div>
             </div>

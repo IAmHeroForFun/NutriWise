@@ -51,6 +51,9 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
+            'libraries': {
+                'food_images': 'core.templatetags.food_images',
+            },
         },
     },
 ]
