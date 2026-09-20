@@ -387,7 +387,7 @@ docker compose -f docker-compose.lightsail.yml exec web python manage.py creates
 ```
 
 ### 4. Central Nginx Upstream Configuration
-Place `nutriwise.conf` into your central Nginx `conf.d/` directory:
+Append the NutriWise server block to your central Nginx configuration file (`/opt/services/omvi_blog/nginx/default.conf`):
 ```nginx
 upstream nutriwise {
     server nutriwise_web:8000;
@@ -409,16 +409,6 @@ server {
 
     client_max_body_size 50M;
 
-    location /static/ {
-        alias /opt/services/nutriwise/staticfiles/;
-        expires 30d;
-    }
-
-    location /media/ {
-        alias /opt/services/nutriwise/media/;
-        expires 7d;
-    }
-
     location / {
         proxy_pass http://nutriwise;
         proxy_set_header Host $host;
@@ -431,10 +421,9 @@ server {
 }
 ```
 
-Reload Nginx:
+Restart Nginx:
 ```bash
+docker restart $(docker ps -q -f name=nginx)
 docker exec $(docker ps -q -f name=nginx) nginx -t
-docker exec $(docker ps -q -f name=nginx) nginx -s reload
 ```
 
-```
