@@ -1,6 +1,5 @@
 {% extends 'base.html' %}
 {% load static %}
-{% load food_images %}
 
 {% block title %}Today's Dietary Plan — NutriWise{% endblock %}
 
@@ -208,13 +207,10 @@
               {% for item in items %}
                 <div class="food-card" data-ingredients="{{ item.ingredients|join:','|lower }}">
                   
-                  <!-- Food Imagery Header -->
-                  <div class="food-card-media">
-                    <img src="{{ item.name|food_image:item.category }}" alt="{{ item.name }}" class="food-card-img" loading="lazy">
-                    <div class="food-card-overlay">
-                      <span class="category-chip">{{ item.category|default:meal_key|title }}</span>
-                      <span class="score-badge-glow">★ {{ item.score }}/100</span>
-                    </div>
+                  <!-- Clean Category & Compatibility Badge Header -->
+                  <div class="food-card-header-bar">
+                    <span class="category-chip">{{ item.category|default:meal_key|title }}</span>
+                    <span class="score-badge-glow">★ {{ item.score }}/100</span>
                   </div>
 
                   <div class="food-card-body">
