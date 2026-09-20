@@ -120,15 +120,26 @@ async function markCantMake(foodId, foodName) {
   }
 }
 
+function scrollToElement(elem) {
+  if (!elem) return;
+  const headerOffset = window.innerWidth <= 860 ? 130 : 85;
+  const elementPosition = elem.getBoundingClientRect().top;
+  const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+  window.scrollTo({
+    top: Math.max(0, offsetPosition),
+    behavior: 'smooth'
+  });
+}
+
 // 5. Interactive Time of Day and Health Hub Switcher
 function showTab(targetId) {
   const mealsContainer = document.getElementById('mealsContainer');
   const healthHub = document.getElementById('health-ingredients-hub');
   const activeFilterLabel = document.getElementById('activeFilterLabel');
   const resetFilterBtn = document.getElementById('resetFilterBtn');
-  const rightPane = document.getElementById('splitRightPane');
 
-  // Update active button state
+  // Update active button state in sidebar and mobile tabs
   document.querySelectorAll('.meal-nav-item').forEach(btn => {
     btn.classList.toggle('active', btn.getAttribute('data-target') === targetId);
   });
@@ -137,34 +148,43 @@ function showTab(targetId) {
   document.querySelectorAll('.food-card').forEach(card => card.style.display = 'flex');
 
   if (targetId === 'health-ingredients-hub') {
-    mealsContainer.style.display = 'none';
-    healthHub.style.display = 'block';
-    activeFilterLabel.innerHTML = '🌿 <strong>Health & Ingredients Explorer</strong> &mdash; Select any ingredient to see therapeutic benefits and matching dishes';
-    resetFilterBtn.style.display = 'inline-block';
-    if (rightPane) rightPane.scrollTo({ top: 0, behavior: 'smooth' });
+    if (mealsContainer) mealsContainer.style.display = 'none';
+    if (healthHub) {
+      healthHub.style.display = 'block';
+      scrollToElement(healthHub);
+    }
+    if (activeFilterLabel) {
+      activeFilterLabel.innerHTML = '🌿 <strong>Health & Ingredients Explorer</strong> &mdash; Select any ingredient to see therapeutic benefits and matching dishes';
+    }
+    if (resetFilterBtn) resetFilterBtn.style.display = 'inline-block';
     return;
   }
 
   // Else showing meals
-  healthHub.style.display = 'none';
-  mealsContainer.style.display = 'block';
+  if (healthHub) healthHub.style.display = 'none';
+  if (mealsContainer) mealsContainer.style.display = 'block';
 
   const mealPanes = document.querySelectorAll('.meal-section-pane');
 
   if (targetId === 'all-meals-view') {
     mealPanes.forEach(pane => pane.style.display = 'block');
-    activeFilterLabel.innerText = 'Displaying all curated culinary dishes for today';
-    resetFilterBtn.style.display = 'none';
-    if (rightPane) rightPane.scrollTo({ top: 0, behavior: 'smooth' });
+    if (activeFilterLabel) activeFilterLabel.innerText = 'Displaying all curated culinary dishes for today';
+    if (resetFilterBtn) resetFilterBtn.style.display = 'none';
+    const firstMeal = document.querySelector('.meal-section-pane');
+    if (firstMeal) scrollToElement(firstMeal);
   } else {
     // Show specific meal time
     mealPanes.forEach(pane => {
       pane.style.display = (pane.id === targetId) ? 'block' : 'none';
     });
     const mealName = targetId.replace('meal-', '').toUpperCase();
-    activeFilterLabel.innerHTML = `Showing dishes for <strong>${mealName}</strong>`;
-    resetFilterBtn.style.display = 'inline-block';
-    if (rightPane) rightPane.scrollTo({ top: 0, behavior: 'smooth' });
+    if (activeFilterLabel) activeFilterLabel.innerHTML = `Showing dishes for <strong>${mealName}</strong>`;
+    if (resetFilterBtn) resetFilterBtn.style.display = 'inline-block';
+
+    const targetPane = document.getElementById(targetId);
+    if (targetPane) {
+      scrollToElement(targetPane);
+    }
   }
 }
 
@@ -175,10 +195,9 @@ function filterByIngredient(ingredientName) {
   const healthHub = document.getElementById('health-ingredients-hub');
   const activeFilterLabel = document.getElementById('activeFilterLabel');
   const resetFilterBtn = document.getElementById('resetFilterBtn');
-  const rightPane = document.getElementById('splitRightPane');
 
-  mealsContainer.style.display = 'block';
-  healthHub.style.display = 'none';
+  if (mealsContainer) mealsContainer.style.display = 'block';
+  if (healthHub) healthHub.style.display = 'none';
 
   let matchCount = 0;
   document.querySelectorAll('.meal-section-pane').forEach(pane => {
@@ -196,9 +215,11 @@ function filterByIngredient(ingredientName) {
     });
   });
 
-  activeFilterLabel.innerHTML = `Filtered by ingredient: <strong style="color:var(--primary);">${ingredientName}</strong> (${matchCount} dish${matchCount === 1 ? '' : 'es'})`;
-  resetFilterBtn.style.display = 'inline-block';
-  if (rightPane) rightPane.scrollTo({ top: 0, behavior: 'smooth' });
+  if (activeFilterLabel) {
+    activeFilterLabel.innerHTML = `Filtered by ingredient: <strong style="color:var(--primary);">${ingredientName}</strong> (${matchCount} dish${matchCount === 1 ? '' : 'es'})`;
+    scrollToElement(activeFilterLabel);
+  }
+  if (resetFilterBtn) resetFilterBtn.style.display = 'inline-block';
 }
 
 // 7. Search bar inside the Health & Ingredients Hub

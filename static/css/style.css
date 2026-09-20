@@ -1169,6 +1169,11 @@ a:hover {
    ============================================================================== */
 .meal-section-pane {
   margin-bottom: 36px;
+  scroll-margin-top: 85px;
+}
+
+#health-ingredients-hub {
+  scroll-margin-top: 85px;
 }
 
 .meal-header {
@@ -2096,6 +2101,10 @@ a:hover {
   }
 
   /* Food Cards on Mobile */
+  .meal-section-pane, #health-ingredients-hub {
+    scroll-margin-top: 130px;
+  }
+
   .meal-cards-grid {
     grid-template-columns: 1fr;
     gap: 16px;
